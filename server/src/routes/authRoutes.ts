@@ -5,6 +5,7 @@ import { loginUser } from "../controllers/loginController.js";
 import { getProfile } from "../controllers/profileController.js";
 import { createProduct, getProducts, getProductById, updateProduct, deleteProduct } from "../controllers/productController.js";
 import { createOrder, getMyOrders, updateOrderStatus, getAllOrders, cancelOrder } from "../controllers/orderController.js";
+import { addToCart, getCart, updateCartQuantity, removeFromCart } from "../controllers/cartController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/roleMiddleware.js";
@@ -40,5 +41,13 @@ router.get("/admin/orders", protect, authorize("owner", "admin"), getAllOrders);
 
 router.put("/orders/:id/cancel", protect, cancelOrder);
 
+// cart route
+router.post("/cart", protect, addToCart);
+
+router.get("/cart", protect, getCart);
+
+router.put("/cart/:id", protect, updateCartQuantity);
+
+router.delete("/cart/:id", protect, removeFromCart);
 
 export default router;
