@@ -3,6 +3,8 @@ import type { Product } from "../types/Product";
 
 const API_URL = "http://localhost:5000/api/auth";
 
+// GET PRODUCTS
+
 export const getProducts = async (): Promise<Product[]> => {
   const token = localStorage.getItem("token");
 
@@ -15,6 +17,7 @@ export const getProducts = async (): Promise<Product[]> => {
   return response.data.products;
 };
 
+// CREATE PRODUCT
 
 export interface CreateProductData {
   name: string;
@@ -25,12 +28,12 @@ export interface CreateProductData {
 }
 
 export const createProduct = async (
-  productData: Omit<Product, "_id">
+  productData: CreateProductData
 ): Promise<Product> => {
   const token = localStorage.getItem("token");
 
   const response = await axios.post(
-    `${API_URL}/product`,
+    `${API_URL}/products`,
     productData,
     {
       headers: {
@@ -40,4 +43,42 @@ export const createProduct = async (
   );
 
   return response.data.product;
+};
+
+// UPDATE PRODUCT 
+
+export const updateProduct = async (
+  id: string,
+  productData: CreateProductData
+): Promise<Product> => {
+  const token = localStorage.getItem("token");
+
+  const response = await axios.put(
+    `${API_URL}/products/${id}`,
+    productData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data.product;
+};
+
+// DELETE PRODUCT
+
+export const deleteProduct = async (
+  id: string
+): Promise<void> => {
+  const token = localStorage.getItem("token");
+
+  await axios.delete(
+    `${API_URL}/products/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 };

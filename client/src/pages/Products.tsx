@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { getProducts, createProduct } from "../services/productService";
+import {
+  getProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "../services/productService";
+import EditProductModal from "../components/EditProductModal";
 import type { Product } from "../types/Product";
 import AddProductModal from "../components/AddProductModal";
+import DeleteProductModal from "../components/DeleteProductModal";
+import ProductCard from "../components/ProductCard";
 
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -12,16 +20,29 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showAddProduct, setShowAddProduct] = useState(false);
 
-const [formData, setFormData] = useState({
-  name: "",
-  description: "",
-  price: "",
-  stock: "",
-  category: "",
-});
+  const [showEditProduct, setShowEditProduct] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-const [creating, setCreating] = useState(false);
-const [createError, setCreateError] = useState("");
+  const [updating, setUpdating] = useState(false);
+  const [updateError, setUpdateError] = useState("");
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    category: "",
+  });
+
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState("");
+
+  const [showDeleteProduct, setShowDeleteProduct] = useState(false);
+  const [deletingProduct, setDeletingProduct] =
+    useState<Product | null>(null);
+
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   // Get products
   useEffect(() => {
@@ -42,48 +63,142 @@ const [createError, setCreateError] = useState("");
 
   // create products
   const handleCreateProduct = async (
-  e: React.FormEvent
-) => {
-  e.preventDefault();
+    e: React.FormEvent
+  ) => {
+    e.preventDefault();
 
-  try {
-    setCreating(true);
-    setCreateError("");
+    try {
+      setCreating(true);
+      setCreateError("");
 
-    await createProduct({
-      name: formData.name,
-      description: formData.description,
-      price: Number(formData.price),
-      stock: Number(formData.stock),
-      category: formData.category,
+      await createProduct({
+        name: formData.name,
+        description: formData.description,
+        price: Number(formData.price),
+        stock: Number(formData.stock),
+        category: formData.category,
+      });
+
+      // Products dobara load karo
+      const data = await getProducts();
+      setProducts(data);
+
+      // Modal close
+      setShowAddProduct(false);
+
+      // Form reset
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        category: "",
+      });
+    } catch (error: any) {
+      console.error("Create product error:", error);
+
+      setCreateError(
+        error.response?.data?.message ||
+        "Failed to create product"
+      );
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // edit
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    category: "",
+  });
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+
+    setEditFormData({
+      name: product.name,
+      description: product.description,
+      price: String(product.price),
+      stock: String(product.stock),
+      category: product.category,
     });
 
-    // Products dobara load karo
-    const data = await getProducts();
-    setProducts(data);
+    setUpdateError("");
+    setShowEditProduct(true);
+  };
 
-    // Modal close
-    setShowAddProduct(false);
+  const handleUpdateProduct = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
 
-    // Form reset
-    setFormData({
-      name: "",
-      description: "",
-      price: "",
-      stock: "",
-      category: "",
-    });
-  } catch (error: any) {
-    console.error("Create product error:", error);
+    if (!editingProduct) return;
 
-    setCreateError(
-      error.response?.data?.message ||
-      "Failed to create product"
-    );
-  } finally {
-    setCreating(false);
-  }
-};
+    try {
+      setUpdating(true);
+      setUpdateError("");
+
+      await updateProduct(editingProduct._id, {
+        name: editFormData.name,
+        description: editFormData.description,
+        price: Number(editFormData.price),
+        stock: Number(editFormData.stock),
+        category: editFormData.category,
+      });
+
+      const data = await getProducts();
+      setProducts(data);
+
+      setShowEditProduct(false);
+      setEditingProduct(null);
+    } catch (error: any) {
+      console.error("Update product error:", error);
+
+      setUpdateError(
+        error.response?.data?.message ||
+        "Failed to update product"
+      );
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // delete
+  const handleDeleteProduct = (product: Product) => {
+    setDeletingProduct(product);
+    setDeleteError("");
+    setShowDeleteProduct(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingProduct) return;
+
+    try {
+      setDeleting(true);
+      setDeleteError("");
+
+      await deleteProduct(deletingProduct._id);
+
+      const data = await getProducts();
+      setProducts(data);
+
+      setShowDeleteProduct(false);
+      setDeletingProduct(null);
+
+    } catch (error: any) {
+      console.error("Delete product error:", error);
+
+      setDeleteError(
+        error.response?.data?.message ||
+        "Failed to delete product"
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   // Categories
   const categories = useMemo(() => {
@@ -96,20 +211,21 @@ const [createError, setCreateError] = useState("");
 
   // Search + Category filter
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const searchText = search.toLowerCase().trim();
+  const searchText = search.toLowerCase().trim();
 
-      const matchesSearch =
-        product.name.toLowerCase().includes(searchText) ||
-        product.description.toLowerCase().includes(searchText);
+  return products.filter((product) => {
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchText) ||
+      product.description.toLowerCase().includes(searchText) ||
+      product.category.toLowerCase().includes(searchText);
 
-      const matchesCategory =
-        selectedCategory === "All" ||
-        product.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "All" ||
+      product.category === selectedCategory;
 
-      return matchesSearch && matchesCategory;
-    });
-  }, [products, search, selectedCategory]);
+    return matchesSearch && matchesCategory;
+  });
+}, [products, search, selectedCategory]); 
 
   // Loading
   if (loading) {
@@ -165,16 +281,16 @@ const [createError, setCreateError] = useState("");
         </div>
 
         <button
-  type="button"
-  className="btn btn-dark px-4"
-  onClick={() => {
-    setCreateError("");
-    setShowAddProduct(true);
-  }}
->
-  <i className="bi bi-plus-lg me-2"></i>
-  Add Product
-</button>
+          type="button"
+          className="btn btn-dark px-4"
+          onClick={() => {
+            setCreateError("");
+            setShowAddProduct(true);
+          }}
+        >
+          <i className="bi bi-plus-lg me-2"></i>
+          Add Product
+        </button>
 
       </div>
 
@@ -245,7 +361,7 @@ const [createError, setCreateError] = useState("");
           /* Empty State */
           <div className="col-12">
 
-            <div className="card border-0 shadow-sm">
+            <div className="card border-0 shadow-md">
               <div className="card-body text-center py-5">
 
                 <div
@@ -280,121 +396,51 @@ const [createError, setCreateError] = useState("");
 
           /* Product Cards */
           filteredProducts.map((product) => (
-
-            <div
-              className="col-12 col-sm-6 col-lg-4 col-xl-3"
+            <ProductCard
               key={product._id}
-            >
-
-              <div className="product-card card h-100 border-0 shadow-sm">
-
-                <div className="card-body d-flex flex-column">
-
-                  {/* Icon + Category */}
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-
-                    <div
-                      className="product-icon rounded-3 d-flex align-items-center justify-content-center"
-                      style={{
-                        width: "45px",
-                        height: "45px",
-                        backgroundColor: "#f0f2f3",
-                        color: "#1f2428",
-                      }}
-                    >
-                      <i className="bi bi-box-seam fs-5"></i>
-                    </div>
-
-                    <span className="badge text-bg-light">
-                      {product.category}
-                    </span>
-
-                  </div>
-
-                  {/* Product Name */}
-                  <h5
-                    className="fw-bold mb-2"
-                    style={{ color: "#1f2428" }}
-                  >
-                    {product.name}
-                  </h5>
-
-                  {/* Description */}
-                  <p className="text-muted small mb-3">
-                    {product.description}
-                  </p>
-
-                  {/* Price */}
-                  <h4
-                    className="fw-bold mb-3"
-                    style={{ color: "#1f2428" }}
-                  >
-                    ₹{product.price.toLocaleString("en-IN")}
-                  </h4>
-
-                  {/* Stock */}
-                  <div className="d-flex justify-content-between align-items-center border-top pt-3 mt-auto">
-
-                    <span className="text-muted small">
-                      Stock
-                    </span>
-
-                    {product.stock === 0 ? (
-                      <span className="badge text-bg-danger">
-                        Out of stock
-                      </span>
-                    ) : product.stock <= 5 ? (
-                      <span className="badge text-bg-warning">
-                        {product.stock} left
-                      </span>
-                    ) : (
-                      <span className="badge text-bg-success">
-                        {product.stock} units
-                      </span>
-                    )}
-
-                  </div>
-
-                  {/* Actions */}
-                  <div className="d-flex gap-2 mt-3">
-
-                    <button
-                      type="button"
-                      className="product-action btn btn-sm btn-outline-dark flex-grow-1"
-                    >
-                      <i className="bi bi-pencil me-1"></i>
-                      Edit
-                    </button>
-
-                    <button
-                      type="button"
-                      className="product-action btn btn-sm btn-outline-danger"
-                    >
-                      <i className="bi bi-trash3"></i>
-                    </button>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
+              product={product}
+              onEdit={handleEditProduct}
+              onDelete={handleDeleteProduct}
+            />
           ))
         )}
 
       </div>
 
       <AddProductModal
-  show={showAddProduct}
-  creating={creating}
-  createError={createError}
-  formData={formData}
-  setFormData={setFormData}
-  onClose={() => setShowAddProduct(false)}
-  onSubmit={handleCreateProduct}
-/>
+        show={showAddProduct}
+        creating={creating}
+        createError={createError}
+        formData={formData}
+        setFormData={setFormData}
+        onClose={() => setShowAddProduct(false)}
+        onSubmit={handleCreateProduct}
+      />
+
+      <EditProductModal
+        show={showEditProduct}
+        updating={updating}
+        updateError={updateError}
+        formData={editFormData}
+        setFormData={setEditFormData}
+        onClose={() => {
+          setShowEditProduct(false);
+          setEditingProduct(null);
+        }}
+        onSubmit={handleUpdateProduct}
+      />
+
+      <DeleteProductModal
+        show={showDeleteProduct}
+        product={deletingProduct}
+        deleting={deleting}
+        deleteError={deleteError}
+        onClose={() => {
+          setShowDeleteProduct(false);
+          setDeletingProduct(null);
+        }}
+        onConfirm={handleConfirmDelete}
+      />
 
     </div>
   );

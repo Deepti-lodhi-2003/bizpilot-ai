@@ -21,7 +21,7 @@ router.post("/login", loginUser);
 router.get("/profile", protect, authorize("owner", "admin"), getProfile);
 
 // product route
-router.post("/product", protect, authorize("owner", "admin"), createProduct);
+router.post("/products", protect, authorize("owner", "admin"), createProduct);
 
 router.get("/products", protect, authorize("owner", "admin"), getProducts);
 
