@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 interface AddProductModalProps {
   show: boolean;
   creating: boolean;
@@ -31,6 +33,17 @@ const AddProductModal = ({
   onClose,
   onSubmit,
 }: AddProductModalProps) => {
+
+  useEffect(() => {
+    if (!show) return;
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [show]);
+
   if (!show) return null;
 
   return (
@@ -38,6 +51,12 @@ const AddProductModal = ({
       <div
         className="modal-backdrop fade show"
         onClick={() => !creating && onClose()}
+        style={{
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          opacity: 1,
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
+        }}
       />
 
       <div
@@ -46,23 +65,36 @@ const AddProductModal = ({
         role="dialog"
       >
         <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content border-0 shadow-lg">
+          <div
+            className="modal-content border-0 shadow-lg"
+            style={{
+              height: "auto",
+              maxHeight: "90vh",
+              overflow: "hidden",
+            }}
+          >
 
             {/* Header */}
-            <div className="modal-header px-4 py-3">
+            <div
+              className="modal-header px-4 py-3"
+              style={{
+                backgroundColor: "#343a40",
+                color: "#fff",
+              }}
+            >
               <div>
-                <h5 className="modal-title fw-bold mb-1">
+                <h5 className="modal-title fw-bold mb-1 text-white">
                   Add New Product
                 </h5>
 
-                <small className="text-muted">
+                <small className="text-white-50">
                   Add a product to your inventory
                 </small>
               </div>
 
               <button
                 type="button"
-                className="btn-close"
+                className="btn-close btn-close-white"
                 onClick={() => !creating && onClose()}
                 disabled={creating}
               />
@@ -202,7 +234,7 @@ const AddProductModal = ({
 
                 <button
                   type="button"
-                  className="btn btn-light"
+                  className="btn btn-outline-dark"
                   onClick={onClose}
                   disabled={creating}
                 >

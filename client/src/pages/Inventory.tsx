@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { getProducts } from "../services/productService";
+import {
+  getInventory,
+  addStock,
+  removeStock,
+} from "../services/inventoryService";
+
+import ManageStockModal from "../components/ManageStockModal";
+import InventoryHistoryModal from "../components/InventoryHistoryModal";
 import type { Product } from "../types/Product";
 
 const Inventory = () => {
@@ -10,11 +17,20 @@ const Inventory = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const [showManageStock, setShowManageStock] = useState(false);
+  const [updatingStock, setUpdatingStock] = useState(false);
+  const [stockError, setStockError] = useState("");
+
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyProduct, setHistoryProduct] = useState<Product | null>(null);
+
   // Get products
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const data = await getProducts();
+        const data = await getInventory();
         setProducts(data);
       } catch (error) {
         console.error("Failed to fetch inventory:", error);
@@ -26,6 +42,84 @@ const Inventory = () => {
 
     loadProducts();
   }, []);
+
+  const handleManageStock = (product: Product) => {
+    setSelectedProduct(product);
+    setStockError("");
+    setShowManageStock(true);
+  };
+
+  const handleAddStock = async (quantity: number) => {
+    if (!selectedProduct) return;
+
+    try {
+      setUpdatingStock(true);
+      setStockError("");
+
+      const updatedProduct = await addStock(
+        selectedProduct._id,
+        quantity
+      );
+
+      setProducts((currentProducts) =>
+        currentProducts.map((product) =>
+          product._id === updatedProduct._id
+            ? updatedProduct
+            : product
+        )
+      );
+
+      setSelectedProduct(updatedProduct);
+    } catch (error: any) {
+      console.error("Add stock error:", error);
+
+      setStockError(
+        error.response?.data?.message ||
+        "Failed to add stock"
+      );
+    } finally {
+      setUpdatingStock(false);
+    }
+  };
+
+  const handleRemoveStock = async (quantity: number) => {
+    if (!selectedProduct) return;
+
+    try {
+      setUpdatingStock(true);
+      setStockError("");
+
+      const updatedProduct = await removeStock(
+        selectedProduct._id,
+        quantity
+      );
+
+      setProducts((currentProducts) =>
+        currentProducts.map((product) =>
+          product._id === updatedProduct._id
+            ? updatedProduct
+            : product
+        )
+      );
+
+      setSelectedProduct(updatedProduct);
+    } catch (error: any) {
+      console.error("Remove stock error:", error);
+
+      setStockError(
+        error.response?.data?.message ||
+        "Failed to remove stock"
+      );
+    } finally {
+      setUpdatingStock(false);
+    }
+  };
+
+
+  const handleViewHistory = (product: Product) => {
+    setHistoryProduct(product);
+    setShowHistory(true);
+  };
 
   // Categories
   const categories = useMemo(() => {
@@ -100,12 +194,12 @@ const Inventory = () => {
     <div>
       {/* ================= Header ================= */}
       <div className="mb-4">
-        <div
+        {/* <div
           className="text-uppercase fw-semibold small text-secondary mb-1"
           style={{ letterSpacing: "1.5px" }}
         >
           Inventory
-        </div>
+        </div> */}
 
         <h2
           className="fw-bold mb-1"
@@ -114,9 +208,9 @@ const Inventory = () => {
           Inventory Management
         </h2>
 
-        <p className="text-muted mb-0">
+        {/* <p className="text-muted mb-0">
           Monitor your product stock and inventory levels.
-        </p>
+        </p> */}
       </div>
 
       {/* ================= Stats ================= */}
@@ -331,13 +425,62 @@ const Inventory = () => {
 
           <table className="table table-hover align-middle mb-0">
 
-            <thead className="table-light">
+            <thead>
               <tr>
-                <th className="px-4 py-3">Product</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
+                <th
+                  className="px-4 py-3"
+                  style={{
+                    backgroundColor: "#5a6268",
+                    color: "#fff",
+                  }}
+                >
+                  Product
+                </th>
+
+                <th
+                  style={{
+                    backgroundColor: "#5a6268",
+                    color: "#fff",
+                  }}
+                >
+                  Category
+                </th>
+
+                <th
+                  style={{
+                    backgroundColor: "#5a6268",
+                    color: "#fff",
+                  }}
+                >
+                  Price
+                </th>
+
+                <th
+                  style={{
+                    backgroundColor: "#5a6268",
+                    color: "#fff",
+                  }}
+                >
+                  Stock
+                </th>
+
+                <th
+                  style={{
+                    backgroundColor: "#5a6268",
+                    color: "#fff",
+                  }}
+                >
+                  Status
+                </th>
+
+                <th
+                  style={{
+                    backgroundColor: "#5a6268",
+                    color: "#fff",
+                  }}
+                >
+                  Actions
+                </th>
               </tr>
             </thead>
 
@@ -346,7 +489,7 @@ const Inventory = () => {
               {filteredProducts.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="text-center py-5"
                   >
                     <i className="bi bi-box-seam fs-2 text-muted"></i>
@@ -428,6 +571,29 @@ const Inventory = () => {
                       )}
                     </td>
 
+                    {/* action */}
+                    <td>
+                      <div className="d-flex gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-dark"
+                          onClick={() => handleManageStock(product)}
+                        >
+                          <i className="bi bi-box-seam me-1"></i>
+                          Manage
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-secondary"
+                          onClick={() => handleViewHistory(product)}
+                          title="View Stock History"
+                        >
+                          <i className="bi bi-clock-history"></i>
+                        </button>
+                      </div>
+                    </td>
+
                   </tr>
                 ))
               )}
@@ -438,6 +604,32 @@ const Inventory = () => {
 
         </div>
       </div>
+
+      <ManageStockModal
+        show={showManageStock}
+        product={selectedProduct}
+        updating={updatingStock}
+        stockError={stockError}
+        onClose={() => {
+          if (updatingStock) return;
+
+          setShowManageStock(false);
+          setSelectedProduct(null);
+          setStockError("");
+        }}
+        onAddStock={handleAddStock}
+        onRemoveStock={handleRemoveStock}
+      />
+
+      <InventoryHistoryModal
+        show={showHistory}
+        productId={historyProduct?._id || null}
+        productName={historyProduct?.name || ""}
+        onClose={() => {
+          setShowHistory(false);
+          setHistoryProduct(null);
+        }}
+      />
 
     </div>
   );

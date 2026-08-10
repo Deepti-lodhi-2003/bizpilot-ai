@@ -25,9 +25,15 @@ const DeleteProductModal = ({
     <>
       {/* Backdrop */}
       <div
-        className="modal-backdrop fade show"
-        style={{ zIndex: 1040 }}
-      ></div>
+  className="modal-backdrop fade show"
+  style={{
+    zIndex: 1040,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    opacity: 1,
+    backdropFilter: "blur(6px)",
+    WebkitBackdropFilter: "blur(6px)",
+  }}
+/>  
 
       {/* Modal */}
       <div
@@ -40,19 +46,25 @@ const DeleteProductModal = ({
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content border-0 shadow">
 
-            {/* Header */}
-            <div className="modal-header">
-              <h5 className="modal-title fw-bold">
-                Delete Product
-              </h5>
+           {/* Header */}
+<div
+  className="modal-header px-4 py-3"
+  style={{
+    backgroundColor: "#343a40",
+    color: "#fff",
+  }}
+>
+  <h5 className="modal-title fw-bold text-white">
+    Delete Product
+  </h5>
 
-              <button
-                type="button"
-                className="btn-close"
-                onClick={onClose}
-                disabled={deleting}
-              ></button>
-            </div>
+  <button
+    type="button"
+    className="btn-close btn-close-white"
+    onClick={onClose}
+    disabled={deleting}
+  ></button>
+</div>
 
             {/* Body */}
             <div className="modal-body text-center py-4">
@@ -94,41 +106,43 @@ const DeleteProductModal = ({
 
             </div>
 
-            {/* Footer */}
-            <div className="modal-footer">
+           {/* Footer */}
+<div className="modal-footer">
 
-              <button
-                type="button"
-                className="btn btn-light"
-                onClick={onClose}
-                disabled={deleting}
-              >
-                Cancel
-              </button>
+  {/* Cancel - Left */}
+  <button
+  type="button"
+  className="btn btn-dark me-auto"
+  onClick={onClose}
+  disabled={deleting}
+>
+  Cancel
+</button>
 
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={onConfirm}
-                disabled={deleting}
-              >
-                {deleting ? (
-                  <>
-                    <span
-                      className="spinner-border spinner-border-sm me-2"
-                      role="status"
-                    ></span>
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-trash3 me-1"></i>
-                    Delete Product
-                  </>
-                )}
-              </button>
+  {/* Delete - Right */}
+  <button
+    type="button"
+    className="btn btn-danger"
+    onClick={onConfirm}
+    disabled={deleting}
+  >
+    {deleting ? (
+      <>
+        <span
+          className="spinner-border spinner-border-sm me-2"
+          role="status"
+        ></span>
+        Deleting...
+      </>
+    ) : (
+      <>
+        <i className="bi bi-trash3 me-1"></i>
+        Delete Product
+      </>
+    )}
+  </button>
 
-            </div>
+</div>
 
           </div>
         </div>
