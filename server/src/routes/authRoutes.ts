@@ -6,6 +6,7 @@ import { getProfile } from "../controllers/profileController.js";
 import { createProduct, getProducts, getProductById, updateProduct, deleteProduct } from "../controllers/productController.js";
 import { createOrder, getMyOrders, updateOrderStatus, getAllOrders, cancelOrder } from "../controllers/orderController.js";
 import { addToCart, getCart, updateCartQuantity, removeFromCart } from "../controllers/cartController.js";
+import { createPaymentOrder, verifyPayment } from "../controllers/paymentController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/roleMiddleware.js";
@@ -49,5 +50,10 @@ router.get("/cart", protect, getCart);
 router.put("/cart/:id", protect, updateCartQuantity);
 
 router.delete("/cart/:id", protect, removeFromCart);
+
+// payment route
+router.post("/payment/create-order", protect, createPaymentOrder);
+
+router.post("/payment/verify", protect, verifyPayment );
 
 export default router;
