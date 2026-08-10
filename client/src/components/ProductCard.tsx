@@ -82,7 +82,7 @@ const ProductCard = ({
 
             <button
               type="button"
-              className="product-action btn btn-sm btn-outline-dark flex-grow-1"
+              className="product-action btn btn-sm btn-dark flex-grow-1"
               onClick={() => onEdit(product)}
             >
               <i className="bi bi-pencil me-1"></i>
@@ -91,7 +91,7 @@ const ProductCard = ({
 
             <button
               type="button"
-              className="product-action btn btn-sm btn-outline-danger"
+              className="product-action btn btn-sm btn-danger"
               onClick={() => onDelete(product)}
             >
               <i className="bi bi-trash3"></i>

@@ -7,6 +7,7 @@ import { createProduct, getProducts, getProductById, updateProduct, deleteProduc
 import { createOrder, getMyOrders, updateOrderStatus, getAllOrders, cancelOrder } from "../controllers/orderController.js";
 import { addToCart, getCart, updateCartQuantity, removeFromCart } from "../controllers/cartController.js";
 import { createPaymentOrder, verifyPayment } from "../controllers/paymentController.js";
+import { getInventory, addStock, removeStock, getInventoryHistory, } from "../controllers/inventoryController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/roleMiddleware.js";
@@ -55,5 +56,35 @@ router.delete("/cart/:id", protect, removeFromCart);
 router.post("/payment/create-order", protect, createPaymentOrder);
 
 router.post("/payment/verify", protect, verifyPayment );
+
+// inventory routes
+
+router.get(
+  "/inventory",
+  protect,
+  authorize("owner", "admin"),
+  getInventory
+);
+
+router.put(
+  "/inventory/:productId/add",
+  protect,
+  authorize("owner", "admin"),
+  addStock
+);
+
+router.put(
+  "/inventory/:productId/remove",
+  protect,
+  authorize("owner", "admin"),
+  removeStock
+);
+
+router.get(
+  "/inventory/:productId/history",
+  protect,
+  authorize("owner", "admin"),
+  getInventoryHistory
+);
 
 export default router;
