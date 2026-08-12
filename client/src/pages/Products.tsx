@@ -32,6 +32,7 @@ const Products = () => {
     price: "",
     stock: "",
     category: "",
+    image: "",
   });
 
   const [creating, setCreating] = useState(false);
@@ -72,12 +73,13 @@ const Products = () => {
       setCreateError("");
 
       await createProduct({
-        name: formData.name,
-        description: formData.description,
-        price: Number(formData.price),
-        stock: Number(formData.stock),
-        category: formData.category,
-      });
+    name: formData.name,
+    description: formData.description,
+    price: Number(formData.price),
+    stock: Number(formData.stock),
+    category: formData.category,
+    image: formData.image,
+});
 
       // Products dobara load karo
       const data = await getProducts();
@@ -93,6 +95,8 @@ const Products = () => {
         price: "",
         stock: "",
         category: "",
+        image:"",
+        
       });
     } catch (error: any) {
       console.error("Create product error:", error);
@@ -107,24 +111,27 @@ const Products = () => {
   };
 
   // edit
+   // edit
   const [editFormData, setEditFormData] = useState({
     name: "",
     description: "",
     price: "",
     stock: "",
     category: "",
-  });
+    image: "",
+});
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
 
     setEditFormData({
-      name: product.name,
-      description: product.description,
-      price: String(product.price),
-      stock: String(product.stock),
-      category: product.category,
-    });
+    name: product.name,
+    description: product.description,
+    price: String(product.price),
+    stock: String(product.stock),
+    category: product.category,
+    image: product.image || "",
+});
 
     setUpdateError("");
     setShowEditProduct(true);
@@ -142,12 +149,13 @@ const Products = () => {
       setUpdateError("");
 
       await updateProduct(editingProduct._id, {
-        name: editFormData.name,
-        description: editFormData.description,
-        price: Number(editFormData.price),
-        stock: Number(editFormData.stock),
-        category: editFormData.category,
-      });
+    name: editFormData.name,
+    description: editFormData.description,
+    price: Number(editFormData.price),
+    stock: Number(editFormData.stock),
+    category: editFormData.category,
+    image: editFormData.image,
+});
 
       const data = await getProducts();
       setProducts(data);
@@ -261,12 +269,12 @@ const Products = () => {
       <div className="products-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
 
         <div>
-          <div
+          {/* <div
             className="text-uppercase fw-semibold small text-secondary mb-1"
             style={{ letterSpacing: "1.5px" }}
           >
             Inventory
-          </div>
+          </div> */}
 
           <h2
             className="fw-bold mb-1"
@@ -275,9 +283,9 @@ const Products = () => {
             Products
           </h2>
 
-          <p className="text-muted mb-0">
+          {/* <p className="text-muted mb-0">
             Manage your products and inventory.
-          </p>
+          </p> */}
         </div>
 
         <button

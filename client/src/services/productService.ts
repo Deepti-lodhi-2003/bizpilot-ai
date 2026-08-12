@@ -25,6 +25,7 @@ export interface CreateProductData {
   price: number;
   stock: number;
   category: string;
+  image?: string;
 }
 
 export const createProduct = async (

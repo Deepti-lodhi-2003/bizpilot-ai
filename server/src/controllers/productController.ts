@@ -4,7 +4,7 @@ import Product from "../models/Product.js";
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
 
     try {
-        const { name, description, price, stock, category } = req.body;
+        const { name, description, price, stock, category, image, } = req.body;
 
         // Validation
         if (!name || !description || price === undefined || !category) {
@@ -23,6 +23,7 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
             price,
             stock: stock ?? 0,
             category,
+            image: image || "",
         });
 
         res.status(201).json({

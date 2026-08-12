@@ -105,9 +105,9 @@ const ManageStockModal = ({
                   Manage Stock
                 </h5>
 
-                <small className="text-white-50">
+                {/* <small className="text-white-50">
                   Update product inventory
-                </small>
+                </small> */}
               </div>
 
               <button

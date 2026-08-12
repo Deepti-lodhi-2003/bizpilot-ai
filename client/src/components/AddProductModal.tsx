@@ -10,6 +10,7 @@ interface AddProductModalProps {
     price: string;
     stock: string;
     category: string;
+    image: string;
   };
   setFormData: React.Dispatch<
     React.SetStateAction<{
@@ -18,6 +19,7 @@ interface AddProductModalProps {
       price: string;
       stock: string;
       category: string;
+      image: string;
     }>
   >;
   onClose: () => void;
@@ -33,14 +35,16 @@ const AddProductModal = ({
   onClose,
   onSubmit,
 }: AddProductModalProps) => {
-
+  // Prevent background screen scrolling
   useEffect(() => {
     if (!show) return;
+
+    const originalOverflow = document.body.style.overflow;
 
     document.body.style.overflow = "hidden";
 
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = originalOverflow;
     };
   }, [show]);
 
@@ -48,10 +52,12 @@ const AddProductModal = ({
 
   return (
     <>
+      {/* Modal Backdrop */}
       <div
         className="modal-backdrop fade show"
         onClick={() => !creating && onClose()}
         style={{
+          zIndex: 1040,
           backgroundColor: "rgba(0, 0, 0, 0.7)",
           opacity: 1,
           backdropFilter: "blur(6px)",
@@ -59,21 +65,24 @@ const AddProductModal = ({
         }}
       />
 
+      {/* Modal */}
       <div
         className="modal fade show d-block"
         tabIndex={-1}
         role="dialog"
+        aria-modal="true"
+        style={{
+          zIndex: 1050,
+        }}
       >
         <div className="modal-dialog modal-dialog-centered">
           <div
             className="modal-content border-0 shadow-lg"
             style={{
-              height: "auto",
               maxHeight: "90vh",
               overflow: "hidden",
             }}
           >
-
             {/* Header */}
             <div
               className="modal-header px-4 py-3"
@@ -83,13 +92,9 @@ const AddProductModal = ({
               }}
             >
               <div>
-                <h5 className="modal-title fw-bold mb-1 text-white">
+                <h5 className="modal-title fw-bold mb-0 text-white">
                   Add New Product
                 </h5>
-
-                <small className="text-white-50">
-                  Add a product to your inventory
-                </small>
               </div>
 
               <button
@@ -102,8 +107,16 @@ const AddProductModal = ({
 
             {/* Form */}
             <form onSubmit={onSubmit}>
-              <div className="modal-body p-4">
-
+              {/* Scrollable Form Body */}
+              <div
+                className="modal-body p-4"
+                style={{
+                  overflowY: "auto",
+                  maxHeight: "calc(90vh - 130px)",
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                }}
+              >
                 {/* Error */}
                 {createError && (
                   <div className="alert alert-danger d-flex align-items-center">
@@ -112,7 +125,7 @@ const AddProductModal = ({
                   </div>
                 )}
 
-                {/* Name */}
+                {/* Product Name */}
                 <div className="mb-3">
                   <label className="form-label fw-semibold">
                     Product Name
@@ -122,6 +135,10 @@ const AddProductModal = ({
                     type="text"
                     className="form-control"
                     placeholder="Enter product name"
+                    style={{
+                      backgroundColor: "#f1f3f5",
+                      borderColor: "#dee2e6",
+                    }}
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({
@@ -143,6 +160,10 @@ const AddProductModal = ({
                     className="form-control"
                     rows={3}
                     placeholder="Enter product description"
+                    style={{
+                      backgroundColor: "#f1f3f5",
+                      borderColor: "#dee2e6",
+                    }}
                     value={formData.description}
                     onChange={(e) =>
                       setFormData({
@@ -156,14 +177,20 @@ const AddProductModal = ({
 
                 {/* Price + Stock */}
                 <div className="row g-3">
-
+                  {/* Price */}
                   <div className="col-6">
                     <label className="form-label fw-semibold">
                       Price
                     </label>
 
                     <div className="input-group">
-                      <span className="input-group-text">
+                      <span
+                        className="input-group-text"
+                        style={{
+                          backgroundColor: "#e9ecef",
+                          borderColor: "#dee2e6",
+                        }}
+                      >
                         ₹
                       </span>
 
@@ -172,6 +199,10 @@ const AddProductModal = ({
                         className="form-control"
                         placeholder="0"
                         min="0"
+                        style={{
+                          backgroundColor: "#f1f3f5",
+                          borderColor: "#dee2e6",
+                        }}
                         value={formData.price}
                         onChange={(e) =>
                           setFormData({
@@ -184,6 +215,7 @@ const AddProductModal = ({
                     </div>
                   </div>
 
+                  {/* Stock */}
                   <div className="col-6">
                     <label className="form-label fw-semibold">
                       Stock
@@ -194,6 +226,10 @@ const AddProductModal = ({
                       className="form-control"
                       placeholder="0"
                       min="0"
+                      style={{
+                        backgroundColor: "#f1f3f5",
+                        borderColor: "#dee2e6",
+                      }}
                       value={formData.stock}
                       onChange={(e) =>
                         setFormData({
@@ -203,7 +239,6 @@ const AddProductModal = ({
                       }
                     />
                   </div>
-
                 </div>
 
                 {/* Category */}
@@ -216,6 +251,10 @@ const AddProductModal = ({
                     type="text"
                     className="form-control"
                     placeholder="e.g. Electronics"
+                    style={{
+                      backgroundColor: "#f1f3f5",
+                      borderColor: "#dee2e6",
+                    }}
                     value={formData.category}
                     onChange={(e) =>
                       setFormData({
@@ -227,11 +266,38 @@ const AddProductModal = ({
                   />
                 </div>
 
+                {/* Product Image URL */}
+                <div className="mt-3">
+                  <label className="form-label fw-semibold">
+                    Product Image URL
+                  </label>
+
+                  <input
+                    type="url"
+                    className="form-control"
+                    placeholder="https://example.com/product.jpg"
+                    style={{
+                      backgroundColor: "#f1f3f5",
+                      borderColor: "#dee2e6",
+                    }}
+                    value={formData.image}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        image: e.target.value,
+                      })
+                    }
+                  />
+                </div>
               </div>
 
-              {/* Footer */}
-              <div className="modal-footer px-4 py-3">
-
+              {/* Fixed Footer */}
+              <div
+                className="modal-footer px-4 py-3"
+                style={{
+                  backgroundColor: "#fff",
+                }}
+              >
                 <button
                   type="button"
                   className="btn btn-outline-dark"
@@ -248,7 +314,10 @@ const AddProductModal = ({
                 >
                   {creating ? (
                     <>
-                      <span className="spinner-border spinner-border-sm me-2" />
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                      />
                       Creating...
                     </>
                   ) : (
@@ -258,13 +327,20 @@ const AddProductModal = ({
                     </>
                   )}
                 </button>
-
               </div>
             </form>
-
           </div>
         </div>
       </div>
+
+      {/* Hide Modal Scrollbar */}
+      <style>
+        {`
+          .modal-body::-webkit-scrollbar {
+            display: none;
+          }
+        `}
+      </style>
     </>
   );
 };

@@ -11,6 +11,7 @@ interface EditProductModalProps {
     price: string;
     stock: string;
     category: string;
+    image: string;
   };
   setFormData: Dispatch<
     SetStateAction<{
@@ -19,6 +20,7 @@ interface EditProductModalProps {
       price: string;
       stock: string;
       category: string;
+      image: string;
     }>
   >;
   onClose: () => void;
@@ -34,7 +36,6 @@ const EditProductModal = ({
   onClose,
   onSubmit,
 }: EditProductModalProps) => {
-
   // Prevent background screen scrolling
   useEffect(() => {
     if (!show) return;
@@ -83,7 +84,6 @@ const EditProductModal = ({
               maxHeight: "90vh",
             }}
           >
-
             {/* Header */}
             <div
               className="modal-header px-4 py-3"
@@ -106,16 +106,16 @@ const EditProductModal = ({
 
             {/* Form */}
             <form onSubmit={onSubmit}>
-
               {/* Scrollable Form Body */}
               <div
                 className="modal-body p-4"
                 style={{
                   overflowY: "auto",
                   maxHeight: "calc(90vh - 130px)",
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
                 }}
               >
-
                 {/* Error */}
                 {updateError && (
                   <div className="alert alert-danger">
@@ -174,7 +174,6 @@ const EditProductModal = ({
 
                 {/* Price + Stock */}
                 <div className="row g-3">
-
                   {/* Price */}
                   <div className="col-md-6">
                     <label className="form-label fw-semibold">
@@ -224,7 +223,6 @@ const EditProductModal = ({
                       required
                     />
                   </div>
-
                 </div>
 
                 {/* Category */}
@@ -251,11 +249,33 @@ const EditProductModal = ({
                   />
                 </div>
 
+                {/* Image URL */}
+                <div className="mt-3">
+                  <label className="form-label fw-semibold">
+                    Product Image URL
+                  </label>
+
+                  <input
+                    type="url"
+                    className="form-control"
+                    placeholder="https://example.com/product.jpg"
+                    style={{
+                      backgroundColor: "#f1f3f5",
+                      borderColor: "#dee2e6",
+                    }}
+                    value={formData.image}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        image: e.target.value,
+                      })
+                    }
+                  />
+                </div>
               </div>
 
               {/* Footer */}
               <div className="modal-footer px-4 py-3">
-
                 <button
                   type="button"
                   className="btn btn-outline-dark"
@@ -285,14 +305,20 @@ const EditProductModal = ({
                     </>
                   )}
                 </button>
-
               </div>
-
             </form>
-
           </div>
         </div>
       </div>
+
+      {/* Hide Modal Scrollbar */}
+      <style>
+        {`
+          .modal-body::-webkit-scrollbar {
+            display: none;
+          }
+        `}
+      </style>
     </>
   );
 };
