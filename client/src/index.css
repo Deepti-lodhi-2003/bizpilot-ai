@@ -1090,3 +1090,293 @@ body {
   }
 
 }
+
+/* =========================================
+   RELATED PRODUCTS
+========================================= */
+
+.related-product-card {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: #f3f3f0;
+  border: 1px solid #d0d0cc;
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+  cursor: pointer;
+}
+
+.related-product-card:hover {
+  transform: translateY(-9px);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.14);
+  border-color: #a9a9a4;
+}
+
+
+/* =========================================
+   IMAGE
+========================================= */
+
+.related-product-image {
+  position: relative;
+  height: 255px;
+  overflow: hidden;
+  background: #e5e5e1;
+}
+
+.related-product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition:
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.4s ease;
+}
+
+.related-product-card:hover .related-product-img {
+  transform: scale(1.08);
+  filter: brightness(0.9);
+}
+
+
+/* =========================================
+   IMAGE OVERLAY
+========================================= */
+
+.related-image-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.related-image-overlay span {
+  padding: 9px 16px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #17191b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transform: translateY(12px);
+  transition: transform 0.35s ease;
+}
+
+.related-product-card:hover .related-image-overlay {
+  opacity: 1;
+}
+
+.related-product-card:hover
+  .related-image-overlay
+  span {
+  transform: translateY(0);
+}
+
+
+/* =========================================
+   STOCK BADGE
+========================================= */
+
+.related-stock-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 7px 13px;
+  border-radius: 50px;
+  background: #17191b;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  z-index: 2;
+}
+
+.related-stock-badge.out-stock {
+  background: #dc3545;
+}
+
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.related-product-content {
+  padding: 19px 18px 18px;
+}
+
+
+/* =========================================
+   CATEGORY
+========================================= */
+
+.related-product-category {
+  color: #777773;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+}
+
+
+/* =========================================
+   AVAILABLE DOT
+========================================= */
+
+.related-dot {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #777773;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.related-dot span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4d7c52;
+}
+
+
+/* =========================================
+   TITLE
+========================================= */
+
+.related-product-title {
+  color: #17191b;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 9px 0 20px;
+
+  min-height: 43px;
+
+  transition: color 0.25s ease;
+}
+
+.related-product-card:hover
+  .related-product-title {
+  color: #555;
+}
+
+
+/* =========================================
+   BOTTOM
+========================================= */
+
+.related-product-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-top: 15px;
+  border-top: 1px solid #d8d8d4;
+}
+
+
+/* =========================================
+   PRICE
+========================================= */
+
+.related-price-label {
+  display: block;
+  color: #888883;
+  font-size: 0.68rem;
+  margin-bottom: 2px;
+}
+
+.related-product-price {
+  color: #17191b;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+
+/* =========================================
+   VIEW BUTTON
+========================================= */
+
+.related-view-btn {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  background: #17191b;
+  color: #fff;
+
+  text-decoration: none;
+
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.related-view-btn i {
+  transition: transform 0.3s ease;
+}
+
+.related-product-card:hover
+  .related-view-btn {
+  background: #555;
+  color: #fff;
+}
+
+.related-product-card:hover
+  .related-view-btn i {
+  transform: rotate(45deg);
+}
+
+
+/* =========================================
+   VIEW ALL BUTTON
+========================================= */
+
+.related-view-all {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.related-view-all:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 991.98px) {
+  .related-product-image {
+    height: 240px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .related-product-image {
+    height: 260px;
+  }
+
+  .related-product-content {
+    padding: 17px;
+  }
+
+  .related-product-title {
+    font-size: 1rem;
+  }
+}
+

@@ -13,6 +13,8 @@ import Expenses from "../pages/Expenses";
 import Analytics from "../pages/Analytics";
 import AIAssistant from "../pages/AIAssistant";
 import Settings from "../pages/Settings";
+import Shop from "../pages/Shop";
+import ProductDetails from "../pages/ProductDetails";
 
 import DashboardLayout from "../layouts/DashboardLayout";
 
@@ -22,8 +24,11 @@ function AppRoutes() {
       <Routes>
 
         <Route element={<CustomerLayout />}>
-  <Route path="/" element={<Home />} />
-</Route>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
+<Route path="/shop/:id" element={<ProductDetails />} />
+        </Route>
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 

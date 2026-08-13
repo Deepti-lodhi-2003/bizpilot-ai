@@ -49,19 +49,41 @@ const AnimatedPoster = ({
             visible ? "poster-visible" : ""
           }`}
           style={{
-            backgroundColor: dark ? "#1f2428" : "#eef1f3",
+            /* =================================
+               BACKGROUND ONLY
+            ================================= */
+
+            background: dark
+              ? "linear-gradient(135deg, #15181b 0%, #242a2f 50%, #343a40 100%)"
+              : `linear-gradient(
+                  rgba(255, 255, 255, 0.88),
+                  rgba(255, 255, 255, 0.88)
+                ), url("${image}")`,
+
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+
             color: dark ? "#fff" : "#1f2428",
+
             opacity: visible ? 1 : 0,
+
             transform: visible
               ? "translateY(0)"
               : "translateY(70px)",
+
             transition:
               "opacity .8s ease, transform .8s ease",
           }}
         >
           <div className="row align-items-center g-0">
+
+            {/* =========================
+                LEFT CONTENT
+            ========================== */}
+
             <div className="col-lg-6">
               <div className="p-4 p-md-5">
+
                 <span
                   className="text-uppercase small fw-semibold"
                   style={{
@@ -79,7 +101,10 @@ const AnimatedPoster = ({
                 <p
                   className="mb-4"
                   style={{
-                    color: dark ? "#adb5bd" : "#6c757d",
+                    color: dark
+                      ? "#adb5bd"
+                      : "#6c757d",
+
                     maxWidth: "500px",
                   }}
                 >
@@ -96,11 +121,18 @@ const AnimatedPoster = ({
                     } px-4 py-2 rounded-3`}
                   >
                     {buttonText}
+
                     <i className="bi bi-arrow-right ms-2" />
                   </a>
                 )}
+
               </div>
             </div>
+
+            {/* =========================
+                RIGHT IMAGE
+                SAME AS BEFORE
+            ========================== */}
 
             <div className="col-lg-6">
               <div
@@ -119,6 +151,7 @@ const AnimatedPoster = ({
                 />
               </div>
             </div>
+
           </div>
         </div>
       </div>

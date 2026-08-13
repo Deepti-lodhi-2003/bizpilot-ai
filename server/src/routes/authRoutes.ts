@@ -8,6 +8,7 @@ import { createOrder, getMyOrders, updateOrderStatus, getAllOrders, cancelOrder 
 import { addToCart, getCart, updateCartQuantity, removeFromCart } from "../controllers/cartController.js";
 import { createPaymentOrder, verifyPayment } from "../controllers/paymentController.js";
 import { getInventory, addStock, removeStock, getInventoryHistory, } from "../controllers/inventoryController.js";
+import { getCategories,createCategory,deleteCategory,} from "../controllers/categoryController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/roleMiddleware.js";
@@ -86,5 +87,13 @@ router.get(
   authorize("owner", "admin"),
   getInventoryHistory
 );
+
+// Public - Customer Home / Shop
+router.get("/categories", getCategories);
+
+// Admin
+router.post("/categories", protect, authorize("owner", "admin"), createCategory);
+
+router.delete("/categories/:id", protect, authorize("owner", "admin"), deleteCategory);
 
 export default router;
