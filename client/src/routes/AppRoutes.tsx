@@ -15,6 +15,12 @@ import AIAssistant from "../pages/AIAssistant";
 import Settings from "../pages/Settings";
 import Shop from "../pages/Shop";
 import ProductDetails from "../pages/ProductDetails";
+import Cart from "../pages/Cart";
+import CategoryProducs from "../pages/CategoryProducts";
+import CategoryProducts from "../pages/CategoryProducts";
+import Checkout from "../pages/Checkout";
+import MyOrders from "../pages/MyOrders";
+
 
 import DashboardLayout from "../layouts/DashboardLayout";
 
@@ -26,7 +32,18 @@ function AppRoutes() {
         <Route element={<CustomerLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
-<Route path="/shop/:id" element={<ProductDetails />} />
+          <Route path="/shop/:id" element={<ProductDetails />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route
+            path="/category/:categoryName"
+            element={<CategoryProducts />}
+          />
+          <Route
+            path="/category/:categoryId"
+            element={<CategoryProducs />}
+          />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/myorders" element={<MyOrders />} />
         </Route>
 
         <Route path="/login" element={<Login />} />

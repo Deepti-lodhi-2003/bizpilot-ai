@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getProducts } from "../services/productService";
+import { addToCart } from "../services/cartService";
 import type { Product } from "../types/Product";
 import ScrollReveal from "../components/customer/ScrollReveal";
 
@@ -11,9 +12,16 @@ const ProductDetails = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
+  const [loading, setLoading] = useState(true);
+  const [addingToCart, setAddingToCart] = useState(false);
+
+  const [error, setError] = useState("");
+  const [cartMessage, setCartMessage] = useState("");
+
+  // =========================
+  // LOAD PRODUCT
+  // =========================
   useEffect(() => {
     const loadProduct = async () => {
       try {
@@ -45,6 +53,9 @@ const ProductDetails = () => {
     loadProduct();
   }, [id]);
 
+  // =========================
+  // QUANTITY
+  // =========================
   const increaseQuantity = () => {
     if (product && quantity < product.stock) {
       setQuantity((prev) => prev + 1);
@@ -55,10 +66,46 @@ const ProductDetails = () => {
     setQuantity((prev) => Math.max(1, prev - 1));
   };
 
-  const handleAddToCart = () => {
-    if (!product) return;
+  // =========================
+  // ADD TO CART
+  // =========================
+  const handleAddToCart = async () => {
+    if (!product || product.stock <= 0) return;
 
-    navigate("/cart");
+    try {
+      setAddingToCart(true);
+      setCartMessage("");
+
+      // Add product
+      await addToCart(product._id, quantity);
+
+      // IMPORTANT:
+      // Navbar ko cart update ka signal
+      window.dispatchEvent(new Event("cartUpdated"));
+
+      setCartMessage("Product added to cart successfully!");
+
+      setTimeout(() => {
+        setCartMessage("");
+      }, 3000);
+    } catch (error: any) {
+      console.error("Failed to add product to cart:", error);
+
+      if (error?.response?.status === 401) {
+        setCartMessage("Please login to add products to cart.");
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 1200);
+      } else {
+        setCartMessage(
+          error?.response?.data?.message ||
+            "Failed to add product to cart"
+        );
+      }
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   // =========================
@@ -148,8 +195,6 @@ const ProductDetails = () => {
 
   // =========================
   // RELATED PRODUCTS
-  // Same category first,
-  // then other products
   // =========================
   const sameCategoryProducts = allProducts.filter(
     (item) =>
@@ -178,49 +223,37 @@ const ProductDetails = () => {
         minHeight: "100vh",
       }}
     >
-      {/* =====================================
+      {/* =========================
           BREADCRUMB
-      ====================================== */}
-      <section
-        style={{
-          paddingTop: "100px",
-        }}
-      >
+      ========================= */}
+      <section style={{ paddingTop: "100px" }}>
         <div className="container">
           <ScrollReveal>
             <div className="d-flex align-items-center gap-2 small flex-wrap">
               <Link
                 to="/"
                 className="text-decoration-none"
-                style={{
-                  color: "#9da3a8",
-                }}
+                style={{ color: "#9da3a8" }}
               >
                 Home
               </Link>
 
               <i
                 className="bi bi-chevron-right small"
-                style={{
-                  color: "#666",
-                }}
+                style={{ color: "#666" }}
               />
 
               <Link
                 to="/shop"
                 className="text-decoration-none"
-                style={{
-                  color: "#9da3a8",
-                }}
+                style={{ color: "#9da3a8" }}
               >
                 Shop
               </Link>
 
               <i
                 className="bi bi-chevron-right small"
-                style={{
-                  color: "#666",
-                }}
+                style={{ color: "#666" }}
               />
 
               <span
@@ -237,14 +270,13 @@ const ProductDetails = () => {
         </div>
       </section>
 
-      {/* =====================================
-          MAIN PRODUCT SECTION - DARK
-      ====================================== */}
+      {/* =========================
+          MAIN PRODUCT
+      ========================= */}
       <section className="py-4 py-lg-5">
         <div className="container py-lg-4">
           <div className="row g-4 g-lg-5 align-items-center">
-
-            {/* PRODUCT IMAGE */}
+            {/* IMAGE */}
             <div className="col-lg-6">
               <ScrollReveal>
                 <div
@@ -264,7 +296,6 @@ const ProductDetails = () => {
                     }}
                   />
 
-                  {/* Stock Badge */}
                   <div className="position-absolute top-0 start-0 m-4">
                     <span
                       className={`badge rounded-pill px-3 py-2 ${
@@ -282,11 +313,10 @@ const ProductDetails = () => {
               </ScrollReveal>
             </div>
 
-            {/* PRODUCT DETAILS */}
+            {/* DETAILS */}
             <div className="col-lg-6">
               <ScrollReveal delay={150}>
                 <div className="ps-lg-3">
-
                   {/* Category */}
                   <span
                     className="text-uppercase small fw-semibold"
@@ -298,7 +328,7 @@ const ProductDetails = () => {
                     {product.category}
                   </span>
 
-                  {/* Product Name */}
+                  {/* Name */}
                   <h1
                     className="display-5 fw-bold mt-2 mb-3"
                     style={{
@@ -318,8 +348,7 @@ const ProductDetails = () => {
                         color: "#fff",
                       }}
                     >
-                      ₹
-                      {product.price.toLocaleString("en-IN")}
+                      ₹{product.price.toLocaleString("en-IN")}
                     </span>
                   </div>
 
@@ -350,11 +379,7 @@ const ProductDetails = () => {
                   <div className="d-flex align-items-center gap-2 mb-4">
                     <i className="bi bi-box-seam text-white-50" />
 
-                    <span
-                      style={{
-                        color: "#b8bdc2",
-                      }}
-                    >
+                    <span style={{ color: "#b8bdc2" }}>
                       {isOutOfStock
                         ? "Currently unavailable"
                         : `${product.stock} items available`}
@@ -393,9 +418,7 @@ const ProductDetails = () => {
                           type="button"
                           className="btn border-0 rounded-0 text-white"
                           onClick={increaseQuantity}
-                          disabled={
-                            quantity >= product.stock
-                          }
+                          disabled={quantity >= product.stock}
                         >
                           <i className="bi bi-plus" />
                         </button>
@@ -403,19 +426,57 @@ const ProductDetails = () => {
                     </div>
                   )}
 
-                  {/* Buttons */}
+                  {/* MESSAGE */}
+                  {cartMessage && (
+                    <div
+                      className={`alert ${
+                        cartMessage.includes("successfully")
+                          ? "alert-success"
+                          : "alert-warning"
+                      } py-2 px-3 mb-3`}
+                      role="alert"
+                    >
+                      <i
+                        className={`bi ${
+                          cartMessage.includes("successfully")
+                            ? "bi-check-circle"
+                            : "bi-info-circle"
+                        } me-2`}
+                      />
+
+                      {cartMessage}
+                    </div>
+                  )}
+
+                  {/* BUTTONS */}
                   <div className="d-flex flex-column flex-sm-row gap-3">
+                    {/* ADD TO CART */}
                     <button
                       type="button"
                       className="btn btn-light btn-lg rounded-3 px-4 flex-grow-1"
-                      disabled={isOutOfStock}
+                      disabled={
+                        isOutOfStock || addingToCart
+                      }
                       onClick={handleAddToCart}
                     >
-                      <i className="bi bi-cart3 me-2" />
+                      {addingToCart ? (
+                        <>
+                          <span
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                          />
 
-                      {isOutOfStock
-                        ? "Out of Stock"
-                        : "Add to Cart"}
+                          Adding...
+                        </>
+                      ) : (
+                        <>
+                          <i className="bi bi-cart3 me-2" />
+
+                          {isOutOfStock
+                            ? "Out of Stock"
+                            : "Add to Cart"}
+                        </>
+                      )}
                     </button>
 
                     <Link
@@ -426,10 +487,8 @@ const ProductDetails = () => {
                     </Link>
                   </div>
 
-                  {/* Features */}
+                  {/* FEATURES */}
                   <div className="row g-3 mt-4">
-
-                    {/* Secure Shopping */}
                     <div className="col-6">
                       <div className="d-flex gap-2">
                         <i className="bi bi-shield-check fs-5 text-white" />
@@ -439,18 +498,13 @@ const ProductDetails = () => {
                             Secure Shopping
                           </small>
 
-                          <small
-                            style={{
-                              color: "#9da3a8",
-                            }}
-                          >
+                          <small style={{ color: "#9da3a8" }}>
                             Safe & reliable
                           </small>
                         </div>
                       </div>
                     </div>
 
-                    {/* Easy Delivery */}
                     <div className="col-6">
                       <div className="d-flex gap-2">
                         <i className="bi bi-truck fs-5 text-white" />
@@ -460,17 +514,12 @@ const ProductDetails = () => {
                             Easy Delivery
                           </small>
 
-                          <small
-                            style={{
-                              color: "#9da3a8",
-                            }}
-                          >
+                          <small style={{ color: "#9da3a8" }}>
                             Fast & simple
                           </small>
                         </div>
                       </div>
                     </div>
-
                   </div>
                 </div>
               </ScrollReveal>
@@ -479,189 +528,165 @@ const ProductDetails = () => {
         </div>
       </section>
 
-     {/* =====================================
-    RELATED PRODUCTS - MUTED LIGHT
-====================================== */}
-{relatedProducts.length > 0 && (
-  <section
-    className="py-5"
-    style={{
-      backgroundColor: "#dcdcd8",
-      color: "#17191b",
-    }}
-  >
-    <div className="container py-lg-4">
-
-      {/* Section Heading */}
-      <ScrollReveal>
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5">
-
-          <div>
-            <span
-              className="text-uppercase small fw-semibold"
-              style={{
-                color: "#6f6f6b",
-                letterSpacing: "2px",
-              }}
-            >
-              More to explore
-            </span>
-
-            <h2
-              className="fw-bold mt-2 mb-2"
-              style={{
-                color: "#17191b",
-                fontSize: "2rem",
-              }}
-            >
-              You May Also Like
-            </h2>
-
-            <p
-              className="mb-0"
-              style={{
-                color: "#666662",
-              }}
-            >
-              Discover more products you might love.
-            </p>
-          </div>
-
-          <Link
-            to="/shop"
-            className="btn btn-dark rounded-pill px-4 mt-4 mt-md-0 related-view-all"
-          >
-            View All
-            <i className="bi bi-arrow-right ms-2" />
-          </Link>
-        </div>
-      </ScrollReveal>
-
-      {/* =================================
-          PRODUCT CARDS
-      ================================== */}
-      <div className="row g-4">
-        {relatedProducts.map((item, index) => {
-          const relatedImage =
-            item.image ||
-            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=85";
-
-          const relatedOutOfStock = item.stock <= 0;
-
-          return (
-            <div
-              className="col-12 col-sm-6 col-lg-3"
-              key={item._id}
-            >
-              <ScrollReveal delay={index * 100}>
-                <div className="related-product-card">
-
-                  {/* =========================
-                      IMAGE
-                  ========================== */}
-                  <Link
-                    to={`/products/${item._id}`}
-                    className="text-decoration-none"
+      {/* =========================
+          RELATED PRODUCTS
+      ========================= */}
+      {relatedProducts.length > 0 && (
+        <section
+          className="py-5"
+          style={{
+            backgroundColor: "#dcdcd8",
+            color: "#17191b",
+          }}
+        >
+          <div className="container py-lg-4">
+            <ScrollReveal>
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5">
+                <div>
+                  <span
+                    className="text-uppercase small fw-semibold"
+                    style={{
+                      color: "#6f6f6b",
+                      letterSpacing: "2px",
+                    }}
                   >
-                    <div className="related-product-image">
+                    More to explore
+                  </span>
 
-                      <img
-                        src={relatedImage}
-                        alt={item.name}
-                        className="related-product-img"
-                      />
+                  <h2
+                    className="fw-bold mt-2 mb-2"
+                    style={{
+                      color: "#17191b",
+                      fontSize: "2rem",
+                    }}
+                  >
+                    You May Also Like
+                  </h2>
 
-                      {/* Image Overlay */}
-                      <div className="related-image-overlay">
-                        <span>
-                          <i className="bi bi-eye me-2" />
-                          Quick View
-                        </span>
-                      </div>
+                  <p
+                    className="mb-0"
+                    style={{ color: "#666662" }}
+                  >
+                    Discover more products you might love.
+                  </p>
+                </div>
 
-                      {/* Stock Badge */}
-                      <span
-                        className={`related-stock-badge ${
-                          relatedOutOfStock
-                            ? "out-stock"
-                            : ""
-                        }`}
-                      >
-                        {relatedOutOfStock
-                          ? "Out of Stock"
-                          : "In Stock"}
-                      </span>
-                    </div>
-                  </Link>
+                <Link
+                  to="/shop"
+                  className="btn btn-dark rounded-pill px-4 mt-4 mt-md-0"
+                >
+                  View All
+                  <i className="bi bi-arrow-right ms-2" />
+                </Link>
+              </div>
+            </ScrollReveal>
 
-                  {/* =========================
-                      CONTENT
-                  ========================== */}
-                  <div className="related-product-content">
+            <div className="row g-4">
+              {relatedProducts.map((item, index) => {
+                const relatedImage =
+                  item.image ||
+                  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=85";
 
-                    {/* Category */}
-                    <div className="d-flex align-items-center justify-content-between mb-2">
-                      <span className="related-product-category">
-                        {item.category}
-                      </span>
+                const relatedOutOfStock =
+                  item.stock <= 0;
 
-                      {!relatedOutOfStock && (
-                        <span className="related-dot">
-                          <span />
-                          Available
-                        </span>
-                      )}
-                    </div>
+                return (
+                  <div
+                    className="col-12 col-sm-6 col-lg-3"
+                    key={item._id}
+                  >
+                    <ScrollReveal delay={index * 100}>
+                      <div className="related-product-card">
+                        <Link
+                          to={`/products/${item._id}`}
+                          className="text-decoration-none"
+                        >
+                          <div className="related-product-image">
+                            <img
+                              src={relatedImage}
+                              alt={item.name}
+                              className="related-product-img"
+                            />
 
-                    {/* Product Name */}
-                    <Link
-                      to={`/products/${item._id}`}
-                      className="text-decoration-none"
-                    >
-                      <h5 className="related-product-title">
-                        {item.name}
-                      </h5>
-                    </Link>
+                            <div className="related-image-overlay">
+                              <span>
+                                <i className="bi bi-eye me-2" />
+                                Quick View
+                              </span>
+                            </div>
 
-                    {/* Bottom */}
-                    <div className="related-product-bottom">
+                            <span
+                              className={`related-stock-badge ${
+                                relatedOutOfStock
+                                  ? "out-stock"
+                                  : ""
+                              }`}
+                            >
+                              {relatedOutOfStock
+                                ? "Out of Stock"
+                                : "In Stock"}
+                            </span>
+                          </div>
+                        </Link>
 
-                      <div>
-                        <small className="related-price-label">
-                          Price
-                        </small>
+                        <div className="related-product-content">
+                          <div className="d-flex align-items-center justify-content-between mb-2">
+                            <span className="related-product-category">
+                              {item.category}
+                            </span>
 
-                        <div className="related-product-price">
-                          ₹
-                          {item.price.toLocaleString(
-                            "en-IN"
-                          )}
+                            {!relatedOutOfStock && (
+                              <span className="related-dot">
+                                <span />
+                                Available
+                              </span>
+                            )}
+                          </div>
+
+                          <Link
+                            to={`/products/${item._id}`}
+                            className="text-decoration-none"
+                          >
+                            <h5 className="related-product-title">
+                              {item.name}
+                            </h5>
+                          </Link>
+
+                          <div className="related-product-bottom">
+                            <div>
+                              <small className="related-price-label">
+                                Price
+                              </small>
+
+                              <div className="related-product-price">
+                                ₹
+                                {item.price.toLocaleString(
+                                  "en-IN"
+                                )}
+                              </div>
+                            </div>
+
+                            <Link
+                              to={`/products/${item._id}`}
+                              className="related-view-btn"
+                            >
+                              <i className="bi bi-arrow-up-right" />
+                            </Link>
+                          </div>
                         </div>
                       </div>
-
-                      {/* View Button */}
-                      <Link
-                        to={`/products/${item._id}`}
-                        className="related-view-btn"
-                      >
-                        <i className="bi bi-arrow-up-right" />
-                      </Link>
-
-                    </div>
+                    </ScrollReveal>
                   </div>
-                </div>
-              </ScrollReveal>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
-    </div>
-  </section>
-)}
+          </div>
+        </section>
+      )}
 
-      {/* =====================================
-          BOTTOM CTA - SOFT LIGHT
-      ====================================== */}
+      {/* =========================
+          BOTTOM CTA
+      ========================= */}
       <section
         className="py-5"
         style={{
@@ -673,7 +698,6 @@ const ProductDetails = () => {
         <div className="container py-3">
           <ScrollReveal>
             <div className="row align-items-center">
-
               <div className="col-lg-8">
                 <span
                   className="small text-uppercase"
@@ -687,18 +711,14 @@ const ProductDetails = () => {
 
                 <h3
                   className="fw-bold mt-2 mb-2"
-                  style={{
-                    color: "#17191b",
-                  }}
+                  style={{ color: "#17191b" }}
                 >
                   Simple shopping, thoughtfully designed.
                 </h3>
 
                 <p
                   className="mb-lg-0"
-                  style={{
-                    color: "#666662",
-                  }}
+                  style={{ color: "#666662" }}
                 >
                   Discover products, manage your cart and
                   keep track of your orders in one place.
@@ -714,7 +734,6 @@ const ProductDetails = () => {
                   <i className="bi bi-arrow-right ms-2" />
                 </Link>
               </div>
-
             </div>
           </ScrollReveal>
         </div>

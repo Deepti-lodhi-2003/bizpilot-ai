@@ -12,7 +12,14 @@ export interface Category {
 const API_URL = "http://localhost:5000/api/auth";
 
 export const getCategories = async (): Promise<Category[]> => {
-  const response = await axios.get(`${API_URL}/categories`);
+  const response = await axios.get(
+    `${API_URL}/categories`
+  );
 
-  return response.data.categories;
+  console.log(
+    "Category API response:",
+    response.data
+  );
+
+  return response.data.categories || [];
 };

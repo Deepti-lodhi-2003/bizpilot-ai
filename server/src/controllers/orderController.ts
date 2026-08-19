@@ -11,16 +11,29 @@ export const createOrder = async (
     res: Response
 ): Promise<void> => {
     try {
-        const { product, quantity } = req.body;
+        const {
+  product,
+  quantity,
+  shippingAddress,
+} = req.body;
 
-        if (!product || !quantity) {
-            res.status(400).json({
-                success: false,
-                message: "Product and quantity are required",
-            });
+        if (
+  !product ||
+  !quantity ||
+  !shippingAddress?.fullName ||
+  !shippingAddress?.phone ||
+  !shippingAddress?.addressLine ||
+  !shippingAddress?.city ||
+  !shippingAddress?.state ||
+  !shippingAddress?.pincode
+) {
+  res.status(400).json({
+    success: false,
+    message: "Complete shipping address is required",
+  });
 
-            return;
-        }
+  return;
+}
 
         const existingProduct = await Product.findById(product);
 
@@ -36,11 +49,12 @@ export const createOrder = async (
         const totalAmount = existingProduct.price * quantity;
 
         const order = await Order.create({
-            user: new mongoose.Types.ObjectId(req.user!.userId),
-            product,
-            quantity,
-            totalAmount,
-        });
+  user: new mongoose.Types.ObjectId(req.user!.userId),
+  product,
+  quantity,
+  totalAmount,
+  shippingAddress,
+});
 
         res.status(201).json({
             success: true,

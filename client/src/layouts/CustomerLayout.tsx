@@ -1,20 +1,79 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import CustomerFooter from "../components/customer/CustomerFooter";
+import { getCart } from "../services/cartService";
 
 const CustomerLayout = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
+  // =========================
+  // LOAD CART COUNT
+  // =========================
+  const loadCartCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      // Login nahi hai
+      if (!token) {
+        setCartCount(0);
+        return;
+      }
+
+      const cart = await getCart();
+
+      // Total quantity calculate
+      const totalQuantity = cart.reduce(
+        (total, item) => total + item.quantity,
+        0
+      );
+
+      setCartCount(totalQuantity);
+    } catch (error) {
+      console.error("Failed to load cart count:", error);
+      setCartCount(0);
+    }
+  };
+
+  // =========================
+  // SCROLL + INITIAL CART
+  // =========================
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+    };
+
     handleScroll();
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // Page load par cart count
+    loadCartCount();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // =========================
+  // LISTEN FOR CART CHANGES
+  // =========================
+  useEffect(() => {
+    const handleCartUpdated = () => {
+      loadCartCount();
+    };
+
+    window.addEventListener("cartUpdated", handleCartUpdated);
+
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdated);
+    };
   }, []);
 
   return (
     <div className="customer-layout">
-      {/* Navbar */}
+      {/* ==============================
+          NAVBAR
+      ============================== */}
       <nav
         className={`navbar navbar-expand-lg navbar-dark fixed-top custom-navbar ${
           scrolled ? "is-scrolled" : ""
@@ -22,10 +81,14 @@ const CustomerLayout = () => {
       >
         <div className="container">
           {/* Brand */}
-          <NavLink to="/" className="navbar-brand d-flex align-items-center fw-bold">
+          <NavLink
+            to="/"
+            className="navbar-brand d-flex align-items-center fw-bold"
+          >
             <div className="brand-icon d-flex align-items-center justify-content-center rounded-3 me-2">
               <i className="bi bi-bar-chart-fill text-white"></i>
             </div>
+
             <span>BizPilot</span>
           </NavLink>
 
@@ -95,15 +158,27 @@ const CustomerLayout = () => {
 
             {/* Right Side */}
             <div className="d-flex align-items-center gap-2 mt-3 mt-lg-0">
-              {/* Cart */}
+              {/* =========================
+                  CART
+              ========================= */}
               <NavLink
                 to="/cart"
                 className={({ isActive }) =>
-                  `navbar-cart ${isActive ? "navbar-cart-active" : ""}`
+                  `navbar-cart position-relative ${
+                    isActive ? "navbar-cart-active" : ""
+                  }`
                 }
               >
                 <i className="bi bi-bag"></i>
+
                 <span>Cart</span>
+
+                {/* Cart Count */}
+                {cartCount > 0 && (
+                  <span className="cart-count-badge">
+                    {cartCount}
+                  </span>
+                )}
               </NavLink>
 
               {/* Login */}
@@ -127,7 +202,7 @@ const CustomerLayout = () => {
       <style>
         {`
           /* ==============================
-             NAVBAR — transparent to solid
+             NAVBAR
           ============================== */
 
           .custom-navbar {
@@ -135,7 +210,10 @@ const CustomerLayout = () => {
             box-shadow: none;
             padding-top: 16px;
             padding-bottom: 16px;
-            transition: background-color 0.35s ease, box-shadow 0.35s ease, padding 0.35s ease;
+            transition:
+              background-color 0.35s ease,
+              box-shadow 0.35s ease,
+              padding 0.35s ease;
           }
 
           .custom-navbar.is-scrolled {
@@ -147,11 +225,6 @@ const CustomerLayout = () => {
             padding-bottom: 10px;
           }
 
-          @keyframes navDropIn {
-            from { opacity: 0; transform: translateY(-16px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-
           /* ==============================
              BRAND
           ============================== */
@@ -161,7 +234,9 @@ const CustomerLayout = () => {
             height: 38px;
             background-color: rgba(255, 255, 255, 0.14);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s ease;
+            transition:
+              transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 0.25s ease;
           }
 
           .navbar-brand:hover .brand-icon {
@@ -176,7 +251,9 @@ const CustomerLayout = () => {
           .nav-link-custom {
             position: relative;
             color: rgba(255, 255, 255, 0.85) !important;
-            transition: background-color 0.25s ease, color 0.25s ease;
+            transition:
+              background-color 0.25s ease,
+              color 0.25s ease;
           }
 
           .nav-link-custom:hover {
@@ -203,7 +280,10 @@ const CustomerLayout = () => {
             border-radius: 999px;
             font-size: 0.9rem;
             text-decoration: none;
-            transition: transform 0.2s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+            transition:
+              transform 0.2s ease,
+              background-color 0.25s ease,
+              box-shadow 0.25s ease;
           }
 
           .navbar-cart {
@@ -221,6 +301,54 @@ const CustomerLayout = () => {
             background-color: rgba(255, 255, 255, 0.2);
             border-color: rgba(255, 255, 255, 0.4);
           }
+
+          /* ==============================
+             CART COUNT BADGE
+          ============================== */
+
+          .cart-count-badge {
+            min-width: 21px;
+            height: 21px;
+            padding: 0 6px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            background-color: #fff;
+            color: #1f2428;
+
+            border-radius: 999px;
+
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1;
+
+            margin-left: 2px;
+
+            animation: cartBadgePop 0.25s ease;
+          }
+
+          @keyframes cartBadgePop {
+            0% {
+              transform: scale(0.7);
+              opacity: 0;
+            }
+
+            70% {
+              transform: scale(1.12);
+              opacity: 1;
+            }
+
+            100% {
+              transform: scale(1);
+              opacity: 1;
+            }
+          }
+
+          /* ==============================
+             LOGIN
+          ============================== */
 
           .navbar-login {
             color: #1f2428;
@@ -253,6 +381,10 @@ const CustomerLayout = () => {
             box-shadow: none;
           }
 
+          /* ==============================
+             MOBILE
+          ============================== */
+
           @media (max-width: 991px) {
             .custom-navbar:not(.is-scrolled) .navbar-collapse {
               background: rgba(31, 36, 40, 0.92);
@@ -260,6 +392,11 @@ const CustomerLayout = () => {
               border-radius: 12px;
               padding: 12px;
               margin-top: 10px;
+            }
+
+            .navbar-cart,
+            .navbar-login {
+              justify-content: center;
             }
           }
         `}

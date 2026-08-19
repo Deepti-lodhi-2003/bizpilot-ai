@@ -15,7 +15,7 @@ const ProductCard = ({
     <div className="col-12 col-sm-6 col-lg-4 col-xl-3">
       <div className="product-card card h-100 border-1 shadow-sm">
 
-        {/* Product Image */}
+        {/* ================= PRODUCT IMAGE ================= */}
         <div
           className="rounded-top overflow-hidden d-flex align-items-center justify-content-center"
           style={{
@@ -39,46 +39,76 @@ const ProductCard = ({
 
         <div className="card-body d-flex flex-column p-3">
 
-          {/* Product Name */}
+          {/* ================= PRODUCT NAME ================= */}
           <h5
             className="fw-bold mb-2"
-            style={{ color: "#1f2428" }}
-          >
-            {product.name}
-          </h5>
-
-          {/* Description */}
-          <p
-            className="text-muted small mb-3"
             style={{
+              color: "#1f2428",
+              height: "48px",
+              lineHeight: "24px",
               display: "-webkit-box",
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {product.name}
+          </h5>
+
+          {/* ================= DESCRIPTION ================= */}
+          <p
+            className="text-muted small mb-3"
+            style={{
+              height: "36px",
+              lineHeight: "20px",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
             }}
           >
             {product.description}
           </p>
 
-          {/* Price + Category */}
-          <div className="d-flex justify-content-between align-items-center mb-3">
-
+          {/* ================= PRICE + CATEGORY ================= */}
+          <div
+            className="d-flex justify-content-between align-items-center mb-3"
+            style={{
+              height: "29px",
+            }}
+          >
             <h5
               className="fw-bold mb-0"
-              style={{ color: "#1f2428" }}
+              style={{
+                color: "#1f2428",
+              }}
             >
               ₹{product.price.toLocaleString("en-IN")}
             </h5>
 
-            <span className="badge text-bg-light border">
+            <span
+              className="badge text-bg-light border"
+              style={{
+                maxWidth: "120px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+              title={product.category}
+            >
               {product.category}
             </span>
-
           </div>
 
-          {/* Stock */}
-          <div className="d-flex justify-content-between align-items-center border-top pt-3 mb-3">
-
+          {/* ================= STOCK ================= */}
+          <div
+            className="d-flex justify-content-between align-items-center border-top pt-1 mb-2"
+            style={{
+              minHeight: "42px",
+            }}
+          >
             <span className="text-muted small">
               Stock
             </span>
@@ -96,10 +126,9 @@ const ProductCard = ({
                 {product.stock} units
               </span>
             )}
-
           </div>
 
-          {/* Actions */}
+          {/* ================= ACTIONS ================= */}
           <div className="d-flex gap-2 mt-auto">
 
             <button

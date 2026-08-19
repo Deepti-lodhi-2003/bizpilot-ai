@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ScrollReveal from "./ScrollReveal";
-import { getCategories, type Category } from "../../services/categoryService";
+import {
+  getCategories,
+  type Category,
+} from "../../services/categoryService";
 
 const CategorySection = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -11,7 +14,6 @@ const CategorySection = () => {
     const loadCategories = async () => {
       try {
         const data = await getCategories();
-
         setCategories(data);
       } catch (error) {
         console.error("Failed to load categories:", error);
@@ -92,8 +94,12 @@ const CategorySection = () => {
               >
                 <ScrollReveal delay={index * 100}>
 
+                  {/* IMPORTANT:
+                      Product me category NAME store ho raha hai,
+                      isliye URL me category name bhej rahe hain.
+                  */}
                   <Link
-                    to={`/shop?category=${category._id}`}
+                    to={`/category/${encodeURIComponent(category.name)}`}
                     className="text-decoration-none d-block"
                   >
 
@@ -102,7 +108,8 @@ const CategorySection = () => {
                       style={{
                         height: "360px",
                         backgroundColor: "#212529",
-                        border: "1px solid rgba(255,255,255,0.08)",
+                        border:
+                          "1px solid rgba(255,255,255,0.08)",
                       }}
                     >
 
@@ -126,9 +133,7 @@ const CategorySection = () => {
                               "linear-gradient(135deg, #343a40, #16191c)",
                           }}
                         >
-                          <i
-                            className="bi bi-grid-3x3-gap fs-1 text-white-50"
-                          />
+                          <i className="bi bi-grid-3x3-gap fs-1 text-white-50" />
                         </div>
                       )}
 
@@ -245,6 +250,7 @@ const CategorySection = () => {
           }
         `}
       </style>
+
     </section>
   );
 };

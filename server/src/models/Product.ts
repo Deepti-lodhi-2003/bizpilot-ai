@@ -1,11 +1,14 @@
-import mongoose, { Schema, type Document } from "mongoose";
+import mongoose, {
+  Schema,
+  type Document,
+} from "mongoose";
 
 export interface IProduct extends Document {
   name: string;
   description: string;
   price: number;
   stock: number;
-  category: string;
+  category: mongoose.Types.ObjectId;
   image?: string;
 }
 
@@ -37,21 +40,25 @@ const productSchema = new Schema<IProduct>(
     },
 
     category: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: "Category",
       required: true,
-      trim: true,
     },
+
     image: {
-    type: String,
-    required: false,
-    default: "",
-},
+      type: String,
+      required: false,
+      default: "",
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const Product = mongoose.model<IProduct>("Product", productSchema);
+const Product = mongoose.model<IProduct>(
+  "Product",
+  productSchema
+);
 
 export default Product;

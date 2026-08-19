@@ -5,6 +5,16 @@ export interface IOrder extends Document {
     product: mongoose.Types.ObjectId;
     quantity: number;
     totalAmount: number;
+
+    shippingAddress: {
+        fullName: string;
+        phone: string;
+        addressLine: string;
+        city: string;
+        state: string;
+        pincode: string;
+    };
+
     status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
 }
 
@@ -31,6 +41,38 @@ const orderSchema = new Schema<IOrder>(
             type: Number,
             required: true,
             min: 0,
+        },
+
+        shippingAddress: {
+            fullName: {
+                type: String,
+                required: true,
+            },
+
+            phone: {
+                type: String,
+                required: true,
+            },
+
+            addressLine: {
+                type: String,
+                required: true,
+            },
+
+            city: {
+                type: String,
+                required: true,
+            },
+
+            state: {
+                type: String,
+                required: true,
+            },
+
+            pincode: {
+                type: String,
+                required: true,
+            },
         },
 
         status: {

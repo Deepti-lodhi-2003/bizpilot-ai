@@ -1,20 +1,21 @@
 import axios from "axios";
+import type { Product } from "../types/Product";
 
 const API_URL = "http://localhost:5000/api/auth";
 
-export interface OrderProduct {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-}
+// ======================================
+// USER
+// ======================================
 
 export interface OrderUser {
   _id: string;
   name: string;
   email: string;
 }
+
+// ======================================
+// STATUS
+// ======================================
 
 export type OrderStatus =
   | "pending"
@@ -23,49 +24,148 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 
+// ======================================
+// ORDER
+// ======================================
+
 export interface Order {
   _id: string;
   user: OrderUser;
-  product: OrderProduct;
+  product: Product;
   quantity: number;
   totalAmount: number;
   status: OrderStatus;
+
+  shippingAddress: ShippingAddress;
+
   createdAt: string;
   updatedAt: string;
 }
 
-// Get all orders for dashboard
-export const getAllOrders = async (): Promise<Order[]> => {
+// ======================================
+// AUTH
+// ======================================
+
+const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
 
-  const response = await axios.get(
-    `${API_URL}/admin/orders`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  return response.data.orders;
+  return {
+    Authorization: `Bearer ${token}`,
+  };
 };
 
-// Update order status
-export const updateOrderStatus = async (
-  orderId: string,
-  status: OrderStatus
-): Promise<Order> => {
-  const token = localStorage.getItem("token");
+// ======================================
+// CREATE ORDER
+// ======================================
 
-  const response = await axios.put(
-    `${API_URL}/orders/${orderId}/status`,
-    { status },
+export interface ShippingAddress {
+  fullName: string;
+  phone: string;
+  addressLine: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+
+export const createOrder = async (
+  product: string,
+  quantity: number,
+  shippingAddress: ShippingAddress
+): Promise<Order> => {
+  const response = await axios.post(
+    `${API_URL}/order`,
     {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      product,
+      quantity,
+      shippingAddress,
+    },
+    {
+      headers: getAuthHeaders(),
     }
   );
 
   return response.data.order;
+};
+
+// ======================================
+// MY ORDERS
+// ======================================
+
+export const getMyOrders = async (): Promise<Order[]> => {
+  const response = await axios.get(`${API_URL}/orders`, {
+    headers: getAuthHeaders(),
+  });
+
+  return response.data.orders;
+};
+
+// ======================================
+// SINGLE ORDER
+// ======================================
+
+export const getOrderById = async (
+  id: string
+): Promise<Order> => {
+  const response = await axios.get(
+    `${API_URL}/orders/${id}`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+
+  return response.data.order;
+};
+
+// ======================================
+// CANCEL ORDER
+// ======================================
+
+export const cancelOrder = async (
+  id: string
+): Promise<Order> => {
+  const response = await axios.put(
+    `${API_URL}/orders/${id}/cancel`,
+    {},
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+
+  return response.data.order;
+};
+
+// ======================================
+// UPDATE STATUS - ADMIN
+// ======================================
+
+export const updateOrderStatus = async (
+  id: string,
+  status: OrderStatus
+): Promise<Order> => {
+  const response = await axios.put(
+    `${API_URL}/orders/${id}/status`,
+    {
+      status,
+    },
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+
+  return response.data.order;
+};
+
+// ======================================
+// ALL ORDERS - ADMIN
+// ======================================
+
+export const getAllOrders = async (): Promise<Order[]> => {
+  const response = await axios.get(
+    `${API_URL}/admin/orders`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+
+  return response.data.orders;
 };
