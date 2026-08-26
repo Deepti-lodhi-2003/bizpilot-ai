@@ -6,14 +6,7 @@ const API_URL = "http://localhost:5000/api/auth";
 // GET PRODUCTS
 
 export const getProducts = async (): Promise<Product[]> => {
-  const token = localStorage.getItem("token");
-
-  const response = await axios.get(`${API_URL}/products`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
+  const response = await axios.get(`${API_URL}/products`);
   return response.data.products;
 };
 

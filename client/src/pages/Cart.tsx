@@ -6,6 +6,7 @@ import {
     removeFromCart,
 } from "../services/cartService";
 import type { CartItem } from "../services/cartService";
+import { getCategoryName } from "../types/Product";
 
 const Cart = () => {
     const [cart, setCart] = useState<CartItem[]>([]);
@@ -289,7 +290,7 @@ const Cart = () => {
                                                     color: "#8f969d",
                                                 }}
                                             >
-                                                {item.product.category}
+                                                {getCategoryName(item.product.category)}
                                             </small>
 
                                             <h5

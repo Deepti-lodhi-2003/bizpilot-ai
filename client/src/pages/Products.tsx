@@ -6,7 +6,7 @@ import {
   deleteProduct,
 } from "../services/productService";
 import EditProductModal from "../components/EditProductModal";
-import type { Product } from "../types/Product";
+import { type Product, getCategoryName } from "../types/Product";
 import AddProductModal from "../components/AddProductModal";
 import DeleteProductModal from "../components/DeleteProductModal";
 import ProductCard from "../components/ProductCard";
@@ -129,7 +129,7 @@ const Products = () => {
     description: product.description,
     price: String(product.price),
     stock: String(product.stock),
-    category: product.category,
+    category: getCategoryName(product.category),
     image: product.image || "",
 });
 
@@ -211,7 +211,11 @@ const Products = () => {
   // Categories
   const categories = useMemo(() => {
     const uniqueCategories = [
-      ...new Set(products.map((product) => product.category)),
+      ...new Set(
+        products
+          .map((product) => getCategoryName(product.category))
+          .filter((cat) => cat.trim() !== "")
+      ),
     ];
 
     return ["All", ...uniqueCategories];
@@ -219,21 +223,23 @@ const Products = () => {
 
   // Search + Category filter
   const filteredProducts = useMemo(() => {
-  const searchText = search.toLowerCase().trim();
+    const searchText = search.toLowerCase().trim();
 
-  return products.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchText) ||
-      product.description.toLowerCase().includes(searchText) ||
-      product.category.toLowerCase().includes(searchText);
+    return products.filter((product) => {
+      const categoryName = getCategoryName(product.category);
 
-    const matchesCategory =
-      selectedCategory === "All" ||
-      product.category === selectedCategory;
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchText) ||
+        product.description.toLowerCase().includes(searchText) ||
+        categoryName.toLowerCase().includes(searchText);
 
-    return matchesSearch && matchesCategory;
-  });
-}, [products, search, selectedCategory]); 
+      const matchesCategory =
+        selectedCategory === "All" ||
+        categoryName === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, search, selectedCategory]);  
 
   // Loading
   if (loading) {

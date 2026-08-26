@@ -4,6 +4,37 @@ import type { Product } from "../types/Product";
 const API_URL = "http://localhost:5000/api/auth";
 
 // ======================================
+// SHIPPING ADDRESS
+// ======================================
+
+export interface ShippingAddress {
+  fullName: string;
+  phone: string;
+  addressLine: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+
+// ======================================
+// ORDER ITEM PAYLOAD
+// ======================================
+
+export interface OrderItemPayload {
+  product: string;
+  quantity: number;
+}
+
+// ======================================
+// CREATE ORDER PAYLOAD
+// ======================================
+
+export interface CreateOrderPayload {
+  items: OrderItemPayload[];
+  shippingAddress: ShippingAddress;
+}
+
+// ======================================
 // USER
 // ======================================
 
@@ -14,7 +45,17 @@ export interface OrderUser {
 }
 
 // ======================================
-// STATUS
+// ORDER ITEM
+// ======================================
+
+export interface OrderItem {
+  product: Product;
+  quantity: number;
+  price: number;
+}
+
+// ======================================
+// ORDER STATUS
 // ======================================
 
 export type OrderStatus =
@@ -30,20 +71,23 @@ export type OrderStatus =
 
 export interface Order {
   _id: string;
+
   user: OrderUser;
-  product: Product;
-  quantity: number;
+
+  items: OrderItem[];
+
   totalAmount: number;
-  status: OrderStatus;
 
   shippingAddress: ShippingAddress;
+
+  status: OrderStatus;
 
   createdAt: string;
   updatedAt: string;
 }
 
 // ======================================
-// AUTH
+// AUTH HEADERS
 // ======================================
 
 const getAuthHeaders = () => {
@@ -58,27 +102,12 @@ const getAuthHeaders = () => {
 // CREATE ORDER
 // ======================================
 
-export interface ShippingAddress {
-  fullName: string;
-  phone: string;
-  addressLine: string;
-  city: string;
-  state: string;
-  pincode: string;
-}
-
 export const createOrder = async (
-  product: string,
-  quantity: number,
-  shippingAddress: ShippingAddress
+  data: CreateOrderPayload
 ): Promise<Order> => {
   const response = await axios.post(
-    `${API_URL}/order`,
-    {
-      product,
-      quantity,
-      shippingAddress,
-    },
+    `${API_URL}/orders`,
+    data,
     {
       headers: getAuthHeaders(),
     }
@@ -88,19 +117,22 @@ export const createOrder = async (
 };
 
 // ======================================
-// MY ORDERS
+// GET MY ORDERS
 // ======================================
 
 export const getMyOrders = async (): Promise<Order[]> => {
-  const response = await axios.get(`${API_URL}/orders`, {
-    headers: getAuthHeaders(),
-  });
+  const response = await axios.get(
+    `${API_URL}/orders`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
 
   return response.data.orders;
 };
 
 // ======================================
-// SINGLE ORDER
+// GET SINGLE ORDER
 // ======================================
 
 export const getOrderById = async (
@@ -135,7 +167,7 @@ export const cancelOrder = async (
 };
 
 // ======================================
-// UPDATE STATUS - ADMIN
+// UPDATE STATUS
 // ======================================
 
 export const updateOrderStatus = async (
@@ -156,7 +188,7 @@ export const updateOrderStatus = async (
 };
 
 // ======================================
-// ALL ORDERS - ADMIN
+// GET ALL ORDERS
 // ======================================
 
 export const getAllOrders = async (): Promise<Order[]> => {

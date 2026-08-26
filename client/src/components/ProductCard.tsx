@@ -1,4 +1,4 @@
-import type { Product } from "../types/Product";
+import { type Product, getCategoryName } from "../types/Product";
 
 interface ProductCardProps {
   product: Product;
@@ -96,9 +96,9 @@ const ProductCard = ({
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
               }}
-              title={product.category}
+              title={getCategoryName(product.category)}
             >
-              {product.category}
+              {getCategoryName(product.category)}
             </span>
           </div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Product } from "../types/Product";
+import { type Product, getCategoryName } from "../types/Product";
 
 interface ManageStockModalProps {
   show: boolean;
@@ -148,7 +148,7 @@ const ManageStockModal = ({
                   </div>
 
                   <small className="text-muted">
-                    {product.category}
+                    {getCategoryName(product.category)}
                   </small>
                 </div>
 

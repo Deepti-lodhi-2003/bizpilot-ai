@@ -1,100 +1,115 @@
 import { type Request, type Response } from "express";
 import Product from "../models/Product.js";
 
-export const createProduct = async (req: Request, res: Response): Promise<void> => {
+export const createProduct = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const {
+      name,
+      description,
+      price,
+      stock,
+      category,
+      image,
+    } = req.body;
 
-    try {
-        const { name, description, price, stock, category, image, } = req.body;
-
-        // Validation
-        if (!name || !description || price === undefined || !category) {
-            res.status(400).json({
-                success: false,
-                message: "Name, description, price and category are required",
-            });
-
-            return;
-        }
-
-        // Create product
-        const product = await Product.create({
-            name,
-            description,
-            price,
-            stock: stock ?? 0,
-            category,
-            image: image || "",
-        });
-
-        res.status(201).json({
-            success: true,
-            message: "Product created successfully",
-            product,
-        });
-    } catch (error) {
-        console.error("Create product error:", error);
-
-        res.status(500).json({
-            success: false,
-            message: "Server error",
-        });
+    if (!name || !description || !price || !category) {
+      res.status(400).json({
+        success: false,
+        message:
+          "Name, description, price and category are required",
+      });
+      return;
     }
+
+    const product = await Product.create({
+      name,
+      description,
+      price: Number(price),
+      stock: Number(stock) || 0,
+      category,
+      image,
+    });
+
+    const populated = await Product.findById(product._id).populate(
+      "category",
+      "name image"
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Product created successfully",
+      product: populated,
+    });
+  } catch (error) {
+    console.error("Create Product:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
 };
 
 
-export const getProducts = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const products = await Product.find();
+export const getProducts = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const products = await Product.find()
+      .populate("category", "name image")
+      .sort({ createdAt: -1 });
 
-        res.status(200).json({
-            success: true,
-            products,
-        });
-    }
+    res.status(200).json({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.error("Get products error:", error);
 
-    catch (error) {
-        console.error("Get products error:", error);
-
-        res.status(500).json({
-            success: false,
-            message: "Server error",
-        });
-    }
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
 
 
 export const getProductById = async (
-    req: Request,
-    res: Response
+  req: Request,
+  res: Response
 ): Promise<void> => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-        const product = await Product.findById(id);
+    const product = await Product.findById(id).populate(
+      "category",
+      "name image"
+    );
 
-        if (!product) {
-            res.status(404).json({
-                success: false,
-                message: "Product not found",
-            });
-
-            return;
-        }
-
-        res.status(200).json({
-            success: true,
-            product,
-        });
+    if (!product) {
+      res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+      return;
     }
 
-    catch (error) {
-        console.error("Get product error:", error);
+    res.status(200).json({
+      success: true,
+      product,
+    });
+  } catch (error) {
+    console.error(error);
 
-        res.status(500).json({
-            success: false,
-            message: "Server error",
-        });
-    }
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
 
 

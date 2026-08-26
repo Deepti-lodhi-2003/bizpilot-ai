@@ -21,6 +21,9 @@ const getAuthHeaders = () => {
 // GET CART
 
 export const getCart = async (): Promise<CartItem[]> => {
+  const token = localStorage.getItem("token");
+  if (!token) return [];
+
   const response = await axios.get(`${API_URL}/cart`, {
     headers: getAuthHeaders(),
   });

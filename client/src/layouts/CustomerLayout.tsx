@@ -143,7 +143,7 @@ const CustomerLayout = () => {
               {/* My Orders */}
               <li className="nav-item">
                 <NavLink
-                  to="/orders"
+                  to="/myorders"
                   className={({ isActive }) =>
                     `nav-link nav-link-custom px-3 py-2 rounded-pill ${
                       isActive ? "active" : ""

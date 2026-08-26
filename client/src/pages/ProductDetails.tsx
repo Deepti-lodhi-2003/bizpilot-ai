@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getProducts } from "../services/productService";
 import { addToCart } from "../services/cartService";
-import type { Product } from "../types/Product";
+import { type Product, getCategoryName } from "../types/Product";
 import ScrollReveal from "../components/customer/ScrollReveal";
 
 const ProductDetails = () => {
@@ -199,15 +199,15 @@ const ProductDetails = () => {
   const sameCategoryProducts = allProducts.filter(
     (item) =>
       item._id !== product._id &&
-      item.category?.toLowerCase() ===
-        product.category?.toLowerCase()
+      getCategoryName(item.category).toLowerCase() ===
+        getCategoryName(product.category).toLowerCase()
   );
 
   const otherProducts = allProducts.filter(
     (item) =>
       item._id !== product._id &&
-      item.category?.toLowerCase() !==
-        product.category?.toLowerCase()
+      getCategoryName(item.category).toLowerCase() !==
+        getCategoryName(product.category).toLowerCase()
   );
 
   const relatedProducts = [
@@ -325,7 +325,7 @@ const ProductDetails = () => {
                       letterSpacing: "1.8px",
                     }}
                   >
-                    {product.category}
+                    {getCategoryName(product.category)}
                   </span>
 
                   {/* Name */}
@@ -632,7 +632,7 @@ const ProductDetails = () => {
                         <div className="related-product-content">
                           <div className="d-flex align-items-center justify-content-between mb-2">
                             <span className="related-product-category">
-                              {item.category}
+                              {getCategoryName(item.category)}
                             </span>
 
                             {!relatedOutOfStock && (

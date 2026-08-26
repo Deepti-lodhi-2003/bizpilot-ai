@@ -15,9 +15,10 @@ import {
 import {
   createOrder,
   getMyOrders,
+  getOrderById,
   updateOrderStatus,
-  getAllOrders,
   cancelOrder,
+  getAllOrders,
 } from "../controllers/orderController.js";
 
 import {
@@ -87,15 +88,11 @@ router.post(
 
 router.get(
   "/products",
-  protect,
-  authorize("owner", "admin"),
   getProducts
 );
 
 router.get(
   "/products/:id",
-  protect,
-  authorize("owner", "admin"),
   getProductById
 );
 
@@ -116,9 +113,8 @@ router.delete(
 // ===============================
 // ORDER
 // ===============================
-
 router.post(
-  "/order",
+  "/orders",
   protect,
   createOrder
 );
@@ -129,12 +125,20 @@ router.get(
   getMyOrders
 );
 
-router.put(
-  "/orders/:id/status",
+router.get(
+  "/orders/:id",
   protect,
-  authorize("owner", "admin"),
-  updateOrderStatus
+  getOrderById
 );
+
+router.put(
+  "/orders/:id/cancel",
+  protect,
+  cancelOrder
+);
+// ======================================
+// ADMIN ORDERS
+// ======================================
 
 router.get(
   "/admin/orders",
@@ -144,9 +148,10 @@ router.get(
 );
 
 router.put(
-  "/orders/:id/cancel",
+  "/orders/:id/status",
   protect,
-  cancelOrder
+  authorize("owner", "admin"),
+  updateOrderStatus
 );
 
 // ===============================

@@ -8,14 +8,32 @@ import {
 
 import type { Order } from "../services/orderService";
 
+const API_BASE_URL = "http://localhost:5000";
+
+const getImageUrl = (image?: string) => {
+  if (!image) return "";
+
+  if (
+    image.startsWith("http://") ||
+    image.startsWith("https://")
+  ) {
+    return image;
+  }
+
+  return `${API_BASE_URL}${
+    image.startsWith("/") ? image : `/${image}`
+  }`;
+};
+
 const MyOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cancelling, setCancelling] = useState<string | null>(null);
+  const [cancelling, setCancelling] =
+    useState<string | null>(null);
 
-  // ===============================
+  // ======================================
   // LOAD ORDERS
-  // ===============================
+  // ======================================
 
   const loadOrders = async () => {
     try {
@@ -23,7 +41,11 @@ const MyOrders = () => {
 
       const data = await getMyOrders();
 
-      setOrders(data);
+      console.log("MY ORDERS:", data);
+
+      setOrders(
+        Array.isArray(data) ? data : []
+      );
     } catch (error) {
       console.error(
         "Failed to load orders:",
@@ -38,9 +60,9 @@ const MyOrders = () => {
     loadOrders();
   }, []);
 
-  // ===============================
+  // ======================================
   // CANCEL ORDER
-  // ===============================
+  // ======================================
 
   const handleCancel = async (id: string) => {
     const confirmed = window.confirm(
@@ -77,9 +99,9 @@ const MyOrders = () => {
     }
   };
 
-  // ===============================
+  // ======================================
   // LOADING
-  // ===============================
+  // ======================================
 
   if (loading) {
     return (
@@ -122,7 +144,6 @@ const MyOrders = () => {
       }}
     >
       <div className="container py-lg-4">
-
         {/* HEADER */}
 
         <div className="mb-5">
@@ -136,9 +157,7 @@ const MyOrders = () => {
             Account
           </span>
 
-          <h1
-            className="display-5 fw-bold mt-2 mb-2"
-          >
+          <h1 className="display-5 fw-bold mt-2 mb-2">
             My Orders
           </h1>
 
@@ -194,7 +213,6 @@ const MyOrders = () => {
           </div>
         ) : (
           <div className="row g-4">
-
             {orders.map((order) => (
               <div
                 className="col-12"
@@ -208,48 +226,10 @@ const MyOrders = () => {
                       "1px solid #34383d",
                   }}
                 >
-                  <div className="row align-items-center g-4">
+                  {/* ORDER HEADER */}
 
-                    {/* IMAGE */}
-
-                    <div className="col-4 col-md-2">
-                      <div
-                        className="rounded-3 overflow-hidden"
-                        style={{
-                          height: "110px",
-                          backgroundColor:
-                            "#24282c",
-                        }}
-                      >
-                        {order.product?.image ? (
-                          <img
-                            src={
-                              order.product.image
-                            }
-                            alt={
-                              order.product.name
-                            }
-                            className="w-100 h-100"
-                            style={{
-                              objectFit: "cover",
-                            }}
-                          />
-                        ) : (
-                          <div
-                            className="w-100 h-100 d-flex align-items-center justify-content-center"
-                            style={{
-                              color: "#777d83",
-                            }}
-                          >
-                            <i className="bi bi-image fs-2" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* DETAILS */}
-
-                    <div className="col-8 col-md-4">
+                  <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
                       <small
                         style={{
                           color: "#8f969d",
@@ -258,38 +238,208 @@ const MyOrders = () => {
                         Order ID
                       </small>
 
-                      <div className="small mb-2">
+                      <div className="small">
                         #{order._id.slice(-8)}
-                      </div>
-
-                      <h5 className="fw-bold mb-1">
-                        {order.product?.name}
-                      </h5>
-
-                      <div
-                        style={{
-                          color: "#9ca1a7",
-                        }}
-                      >
-                        Quantity:{" "}
-                        {order.quantity}
                       </div>
                     </div>
 
-                    {/* PRICE */}
-
-                    <div className="col-6 col-md-2">
+                    <div className="text-md-end">
                       <small
                         style={{
                           color: "#8f969d",
                         }}
                       >
-                        Total
+                        Ordered on
                       </small>
 
-                      <div className="fw-bold mt-1">
+                      <div className="small">
+                        {new Date(
+                          order.createdAt
+                        ).toLocaleDateString(
+                          "en-IN"
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ITEMS */}
+
+                  <div className="row g-4">
+                    {order.items?.map(
+                      (item, index) => {
+                        const product =
+                          item.product;
+
+                        const imageUrl =
+                          product?.image
+                            ? getImageUrl(
+                                product.image
+                              )
+                            : "";
+
+                        return (
+                          <div
+                            className="col-12"
+                            key={`${order._id}-${index}`}
+                          >
+                            <div className="row align-items-center g-3">
+                              {/* IMAGE */}
+
+                              <div className="col-4 col-md-2">
+                                <div
+                                  className="rounded-3 overflow-hidden"
+                                  style={{
+                                    height: "110px",
+                                    backgroundColor:
+                                      "#24282c",
+                                  }}
+                                >
+                                  {imageUrl ? (
+                                    <img
+                                      src={
+                                        imageUrl
+                                      }
+                                      alt={
+                                        product?.name ||
+                                        "Product"
+                                      }
+                                      className="w-100 h-100"
+                                      style={{
+                                        objectFit:
+                                          "cover",
+                                      }}
+                                      onError={(
+                                        e
+                                      ) => {
+                                        e.currentTarget.style.display =
+                                          "none";
+                                      }}
+                                    />
+                                  ) : (
+                                    <div
+                                      className="w-100 h-100 d-flex align-items-center justify-content-center"
+                                      style={{
+                                        color:
+                                          "#777d83",
+                                      }}
+                                    >
+                                      <i className="bi bi-image fs-2" />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* PRODUCT DETAILS */}
+
+                              <div className="col-8 col-md-4">
+                                <small
+                                  style={{
+                                    color:
+                                      "#8f969d",
+                                  }}
+                                >
+                                  Product
+                                </small>
+
+                                <h5 className="fw-bold mb-1">
+                                  {product?.name ||
+                                    "Product unavailable"}
+                                </h5>
+
+                                <div
+                                  style={{
+                                    color:
+                                      "#9ca1a7",
+                                  }}
+                                >
+                                  Quantity:{" "}
+                                  {item.quantity}
+                                </div>
+                              </div>
+
+                              {/* PRICE */}
+
+                              <div className="col-6 col-md-2">
+                                <small
+                                  style={{
+                                    color:
+                                      "#8f969d",
+                                  }}
+                                >
+                                  Price
+                                </small>
+
+                                <div className="fw-bold mt-1">
+                                  ₹
+                                  {Number(
+                                    item.price || 0
+                                  ).toLocaleString(
+                                    "en-IN"
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* ITEM TOTAL */}
+
+                              <div className="col-6 col-md-2">
+                                <small
+                                  style={{
+                                    color:
+                                      "#8f969d",
+                                  }}
+                                >
+                                  Item Total
+                                </small>
+
+                                <div className="fw-bold mt-1">
+                                  ₹
+                                  {(
+                                    Number(
+                                      item.price ||
+                                        0
+                                    ) *
+                                    Number(
+                                      item.quantity ||
+                                        0
+                                    )
+                                  ).toLocaleString(
+                                    "en-IN"
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+
+                  {/* BOTTOM ORDER INFO */}
+
+                  <hr
+                    style={{
+                      borderColor: "#34383d",
+                    }}
+                    className="my-4"
+                  />
+
+                  <div className="row align-items-center g-3">
+                    {/* TOTAL */}
+
+                    <div className="col-6 col-md-3">
+                      <small
+                        style={{
+                          color: "#8f969d",
+                        }}
+                      >
+                        Order Total
+                      </small>
+
+                      <div className="fw-bold fs-5 mt-1">
                         ₹
-                        {order.totalAmount.toLocaleString(
+                        {Number(
+                          order.totalAmount || 0
+                        ).toLocaleString(
                           "en-IN"
                         )}
                       </div>
@@ -297,7 +447,7 @@ const MyOrders = () => {
 
                     {/* STATUS */}
 
-                    <div className="col-6 col-md-2">
+                    <div className="col-6 col-md-3">
                       <small
                         style={{
                           color: "#8f969d",
@@ -327,10 +477,9 @@ const MyOrders = () => {
                       </div>
                     </div>
 
-                    {/* ACTION */}
+                    {/* CANCEL */}
 
-                    <div className="col-12 col-md-2 text-md-end">
-
+                    <div className="col-12 col-md-6 text-md-end">
                       {(order.status ===
                         "pending" ||
                         order.status ===
@@ -362,13 +511,11 @@ const MyOrders = () => {
                           )}
                         </button>
                       )}
-
                     </div>
                   </div>
                 </div>
               </div>
             ))}
-
           </div>
         )}
       </div>

@@ -22,10 +22,6 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
 
           <div>
             <h5 className="mb-0">Dashboard</h5>
-
-            {/* <small className="text-muted d-none d-sm-block">
-              Welcome back to BizPilot AI
-            </small> */}
           </div>
 
         </div>
@@ -33,7 +29,6 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
         {/* RIGHT SIDE */}
         <div className="d-flex align-items-center gap-2 gap-md-3">
 
-          {/* Notification */}
           <button
             type="button"
             className="btn btn-light position-relative"

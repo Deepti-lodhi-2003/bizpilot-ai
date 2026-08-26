@@ -6,6 +6,7 @@ import {
   clearCart,
 } from "../services/cartService";
 import type { CartItem } from "../services/cartService";
+import { getCategoryName } from "../types/Product";
 
 import {
   createOrder,
@@ -321,204 +322,188 @@ const Checkout = () => {
   // PLACE ORDER
   // ======================================
 
-  const handlePlaceOrder = async () => {
-    if (cart.length === 0) {
-      alert("Your cart is empty.");
-      return;
+ const handlePlaceOrder = async () => {
+  if (cart.length === 0) {
+    alert("Your cart is empty.");
+    return;
+  }
+
+  if (!selectedAddress) {
+    alert(
+      "Please select a delivery address before payment."
+    );
+    return;
+  }
+
+  try {
+    setPlacingOrder(true);
+    setError("");
+
+    // ==================================
+    // LOAD RAZORPAY
+    // ==================================
+
+    const razorpayLoaded =
+      await loadRazorpayScript();
+
+    if (!razorpayLoaded) {
+      throw new Error(
+        "Razorpay failed to load. Please try again."
+      );
     }
 
-    if (!selectedAddress) {
-      alert(
-        "Please select a delivery address before payment."
-      );
-      return;
-    }
+    // ==================================
+    // PREPARE ALL CART ITEMS
+    // ==================================
 
-    try {
-      setPlacingOrder(true);
-      setError("");
+    const orderItems = cart.map((item) => ({
+      product: item.product._id,
+      quantity: item.quantity,
+    }));
 
-      // ====================================
-      // LOAD RAZORPAY
-      // ====================================
+    // ==================================
+    // CREATE ONE ORDER
+    // ==================================
 
-      const razorpayLoaded =
-        await loadRazorpayScript();
+    const order = await createOrder({
+      items: orderItems,
 
-      if (!razorpayLoaded) {
-        alert(
-          "Razorpay failed to load. Please check your internet connection."
-        );
+      shippingAddress: {
+        fullName: selectedAddress.fullName,
+        phone: selectedAddress.phone,
+        addressLine: selectedAddress.addressLine,
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        pincode: selectedAddress.pincode,
+      },
+    });
 
-        setPlacingOrder(false);
-        return;
+    console.log("Created order:", order);
+
+    // ==================================
+    // CREATE ONE RAZORPAY ORDER
+    // ==================================
+
+    const razorpayOrder =
+      await createPaymentOrder(order._id);
+
+    // ==================================
+    // OPEN RAZORPAY ONCE
+    // ==================================
+
+    await new Promise<void>(
+      (resolve, reject) => {
+        const options = {
+          key: import.meta.env
+            .VITE_RAZORPAY_KEY_ID,
+
+          amount: razorpayOrder.amount,
+
+          currency:
+            razorpayOrder.currency || "INR",
+
+          name: "BizPilot",
+
+          description:
+            `Order #${order._id
+              .slice(-6)
+              .toUpperCase()}`,
+
+          order_id: razorpayOrder.id,
+
+          handler: async (
+            response: {
+              razorpay_order_id: string;
+              razorpay_payment_id: string;
+              razorpay_signature: string;
+            }
+          ) => {
+            try {
+              await verifyPayment({
+                razorpay_order_id:
+                  response.razorpay_order_id,
+
+                razorpay_payment_id:
+                  response.razorpay_payment_id,
+
+                razorpay_signature:
+                  response.razorpay_signature,
+              });
+
+              resolve();
+            } catch (error) {
+              console.error(
+                "Payment verification failed:",
+                error
+              );
+
+              reject(
+                new Error(
+                  "Payment verification failed"
+                )
+              );
+            }
+          },
+
+          prefill: {
+            name: selectedAddress.fullName,
+
+            email: "",
+
+            contact: selectedAddress.phone,
+          },
+
+          theme: {
+            color: "#111315",
+          },
+
+          modal: {
+            ondismiss: () => {
+              reject(
+                new Error(
+                  "Payment cancelled by user"
+                )
+              );
+            },
+          },
+        };
+
+        const razorpay =
+          new window.Razorpay(options);
+
+        razorpay.open();
       }
+    );
 
-      // ====================================
-      // CREATE ORDERS
-      // ====================================
+    // ==================================
+    // PAYMENT SUCCESS
+    // ==================================
 
-      const createdOrders = [];
+    await clearCart();
 
-      for (const item of cart) {
-        const order = await createOrder(
-          item.product._id,
-          item.quantity,
-          {
-            fullName:
-              selectedAddress.fullName,
+    window.dispatchEvent(
+      new Event("cartUpdated")
+    );
 
-            phone:
-              selectedAddress.phone,
+    navigate("/myorders");
+  } catch (error: any) {
+    console.error(
+      "Place order/payment error:",
+      error
+    );
 
-            addressLine:
-              selectedAddress.addressLine,
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Payment failed. Please try again.";
 
-            city:
-              selectedAddress.city,
+    setError(message);
 
-            state:
-              selectedAddress.state,
-
-            pincode:
-              selectedAddress.pincode,
-          }
-        );
-
-        createdOrders.push(order);
-      }
-
-      // ====================================
-      // PAYMENT
-      // ====================================
-
-      for (const order of createdOrders) {
-        const razorpayOrder =
-          await createPaymentOrder(order._id);
-
-        await new Promise<void>(
-          (resolve, reject) => {
-            const options = {
-              key:
-                import.meta.env
-                  .VITE_RAZORPAY_KEY_ID,
-
-              amount:
-                razorpayOrder.amount,
-
-              currency:
-                razorpayOrder.currency || "INR",
-
-              name: "BizPilot",
-
-              description:
-                `Order #${order._id
-                  .slice(-6)
-                  .toUpperCase()}`,
-
-              order_id:
-                razorpayOrder.id,
-
-              handler: async (
-                response: {
-                  razorpay_order_id: string;
-                  razorpay_payment_id: string;
-                  razorpay_signature: string;
-                }
-              ) => {
-                try {
-                  await verifyPayment({
-                    razorpay_order_id:
-                      response.razorpay_order_id,
-
-                    razorpay_payment_id:
-                      response.razorpay_payment_id,
-
-                    razorpay_signature:
-                      response.razorpay_signature,
-                  });
-
-                  resolve();
-                } catch (error) {
-                  console.error(
-                    "Payment verification failed:",
-                    error
-                  );
-
-                  reject(
-                    new Error(
-                      "Payment verification failed"
-                    )
-                  );
-                }
-              },
-
-              theme: {
-                color: "#111315",
-              },
-
-              prefill: {
-                name:
-                  selectedAddress.fullName,
-
-                email: "",
-
-                contact:
-                  selectedAddress.phone,
-              },
-
-              modal: {
-                ondismiss: () => {
-                  reject(
-                    new Error(
-                      "Payment cancelled by user"
-                    )
-                  );
-                },
-              },
-            };
-
-            const razorpay =
-              new window.Razorpay(options);
-
-            razorpay.open();
-          }
-        );
-      }
-
-      // ====================================
-      // CLEAR CART
-      // ====================================
-
-      await clearCart();
-
-      window.dispatchEvent(
-        new Event("cartUpdated")
-      );
-
-      // ====================================
-      // GO ORDERS
-      // ====================================
-
-      navigate("/orders");
-    } catch (error: any) {
-      console.error(
-        "Place order/payment error:",
-        error
-      );
-
-      const message =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Payment failed. Please try again.";
-
-      setError(message);
-
-      alert(message);
-    } finally {
-      setPlacingOrder(false);
-    }
-  };
+    alert(message);
+  } finally {
+    setPlacingOrder(false);
+  }
+};
 
   // ======================================
   // LOADING
@@ -1049,7 +1034,7 @@ const Checkout = () => {
                         color: "#8f969d",
                       }}
                     >
-                      {item.product.category}
+                      {getCategoryName(item.product.category)}
                     </small>
 
                     <h6 className="fw-bold mt-1 mb-1">

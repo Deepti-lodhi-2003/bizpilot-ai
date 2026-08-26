@@ -15,12 +15,13 @@ export const getCategories = async (
       success: true,
       categories,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get categories error:", error);
 
     res.status(500).json({
       success: false,
       message: "Failed to fetch categories",
+      error: error?.message || String(error),
     });
   }
 };

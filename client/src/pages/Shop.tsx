@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { getProducts } from "../services/productService";
-import type { Product } from "../types/Product";
+import { type Product, getCategoryName } from "../types/Product";
 import ScrollReveal from "../components/customer/ScrollReveal";
 
 const floatingIcons = [
@@ -67,8 +67,8 @@ const Shop = () => {
     const uniqueCategories = Array.from(
       new Set(
         products
-          .map((product) => product.category)
-          .filter(Boolean)
+          .map((product) => getCategoryName(product.category))
+          .filter((cat) => cat.trim() !== "")
       )
     );
 
@@ -82,17 +82,18 @@ const Shop = () => {
     const searchText = search.toLowerCase().trim();
 
     if (searchText) {
-      result = result.filter((product) =>
-        `${product.name} ${product.description} ${product.category}`
+      result = result.filter((product) => {
+        const categoryName = getCategoryName(product.category);
+        return `${product.name} ${product.description} ${categoryName}`
           .toLowerCase()
-          .includes(searchText)
-      );
+          .includes(searchText);
+      });
     }
 
     if (selectedCategory !== "All") {
       result = result.filter(
         (product) =>
-          product.category === selectedCategory
+          getCategoryName(product.category) === selectedCategory
       );
     }
 
@@ -521,7 +522,7 @@ const Shop = () => {
                                   "rgba(31,36,40,0.9)",
                               }}
                             >
-                              {product.category}
+                              {getCategoryName(product.category)}
                             </span>
 
                             {/* Stock */}

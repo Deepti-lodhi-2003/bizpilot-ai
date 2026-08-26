@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { getProducts } from "../../services/productService";
-import type { Product } from "../../types/Product";
+import { type Product, getCategoryName } from "../../types/Product";
 import ScrollReveal from "./ScrollReveal";
 
 const FeaturedProducts = () => {
@@ -143,7 +143,7 @@ const FeaturedProducts = () => {
                           color: "#858b91",
                         }}
                       >
-                        {product.category}
+                        {getCategoryName(product.category)}
                       </small>
 
                       <h5 className="fw-semibold mt-2 mb-0">

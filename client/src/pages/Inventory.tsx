@@ -7,7 +7,7 @@ import {
 
 import ManageStockModal from "../components/ManageStockModal";
 import InventoryHistoryModal from "../components/InventoryHistoryModal";
-import type { Product } from "../types/Product";
+import { type Product, getCategoryName } from "../types/Product";
 
 const Inventory = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -124,7 +124,11 @@ const Inventory = () => {
   // Categories
   const categories = useMemo(() => {
     const uniqueCategories = [
-      ...new Set(products.map((product) => product.category)),
+      ...new Set(
+        products
+          .map((product) => getCategoryName(product.category))
+          .filter((cat) => cat.trim() !== "")
+      ),
     ];
 
     return ["All", ...uniqueCategories];
@@ -135,14 +139,16 @@ const Inventory = () => {
     const searchText = search.toLowerCase().trim();
 
     return products.filter((product) => {
+      const categoryName = getCategoryName(product.category);
+
       const matchesSearch =
         product.name.toLowerCase().includes(searchText) ||
         product.description.toLowerCase().includes(searchText) ||
-        product.category.toLowerCase().includes(searchText);
+        categoryName.toLowerCase().includes(searchText);
 
       const matchesCategory =
         selectedCategory === "All" ||
-        product.category === selectedCategory;
+        categoryName === selectedCategory;
 
       return matchesSearch && matchesCategory;
     });
@@ -547,7 +553,7 @@ const Inventory = () => {
                     {/* Category */}
                     <td>
                       <span className="badge text-bg-light">
-                        {product.category}
+                        {getCategoryName(product.category) || "No Category"}
                       </span>
                     </td>
 

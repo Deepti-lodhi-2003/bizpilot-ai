@@ -1,4 +1,5 @@
 import type { Order } from "../services/orderService";
+import { getCategoryName } from "../types/Product";
 
 interface OrderDetailsModalProps {
     show: boolean;
@@ -23,6 +24,12 @@ const OrderDetailsModal = ({
                     : order.status === "delivered"
                         ? "text-bg-success"
                         : "text-bg-danger";
+
+    const totalQuantity =
+        order.items?.reduce(
+            (sum, item) => sum + Number(item.quantity || 0),
+            0
+        ) || 0;
 
     return (
         <>
@@ -169,43 +176,56 @@ const OrderDetailsModal = ({
 
                             </div>
 
-                            {/* Product */}
+                            {/* Products */}
                             <div className="mb-3">
 
                                 <h6 className="fw-bold mb-2">
                                     Product Information
                                 </h6>
 
-                                <div
-                                    className="rounded-3 p-3"
-                                    style={{
-                                        backgroundColor: "#f1f3f5",
-                                        border: "1px solid #dee2e6",
-                                    }}
-                                >
-                                    <div className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex flex-column gap-2" style={{ maxHeight: "200px", overflowY: "auto" }}>
+                                    {order.items?.map((item, index) => (
+                                        <div
+                                            key={item.product?._id || index}
+                                            className="rounded-3 p-3"
+                                            style={{
+                                                backgroundColor: "#f1f3f5",
+                                                border: "1px solid #dee2e6",
+                                            }}
+                                        >
+                                            <div className="d-flex justify-content-between align-items-center">
+                                                <div className="d-flex align-items-center gap-3">
+                                                    <img
+                                                        src={item.product?.image || "/placeholder-product.png"}
+                                                        alt={item.product?.name}
+                                                        width={45}
+                                                        height={45}
+                                                        className="rounded border"
+                                                        style={{ objectFit: "cover" }}
+                                                    />
+                                                    <div>
+                                                        <div className="fw-semibold">
+                                                            {item.product?.name || "Unknown Product"}
+                                                        </div>
 
-                                        <div>
-                                            <div className="fw-semibold">
-                                                {order.product.name}
+                                                        <small className="text-muted">
+                                                            Category: {getCategoryName(item.product?.category)}
+                                                        </small>
+                                                    </div>
+                                                </div>
+
+                                                <div className="text-end">
+                                                    <small className="text-muted d-block">
+                                                        Quantity
+                                                    </small>
+
+                                                    <span className="fw-semibold">
+                                                        {item.quantity}
+                                                    </span>
+                                                </div>
                                             </div>
-
-                                            <small className="text-muted">
-                                                Category: {order.product.category}
-                                            </small>
                                         </div>
-
-                                        <div className="text-end">
-                                            <small className="text-muted d-block">
-                                                Quantity
-                                            </small>
-
-                                            <span className="fw-semibold">
-                                                {order.quantity}
-                                            </span>
-                                        </div>
-
-                                    </div>
+                                    ))}
                                 </div>
 
                             </div>
@@ -231,7 +251,7 @@ const OrderDetailsModal = ({
                                         </span>
 
                                         <span>
-                                            {order.quantity}
+                                            {totalQuantity}
                                         </span>
                                     </div>
 
