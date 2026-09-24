@@ -23,6 +23,11 @@ const menuItems: MenuItem[] = [
     icon: "bi-box-seam",
   },
   {
+    label: "Categories",
+    path: "/categories",
+    icon: "bi-tags",
+  },
+  {
     label: "Inventory",
     path: "/inventory",
     icon: "bi-boxes",

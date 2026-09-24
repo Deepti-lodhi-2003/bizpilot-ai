@@ -1,5 +1,37 @@
+import mongoose from "mongoose";
 import { type Request, type Response } from "express";
 import Product from "../models/Product.js";
+import Category from "../models/Category.js";
+
+// Helper to resolve category ID whether given an ObjectId string or a Category Name string
+const resolveCategoryId = async (
+  categoryInput: string
+): Promise<mongoose.Types.ObjectId> => {
+  const trimmed = String(categoryInput).trim();
+
+  if (mongoose.Types.ObjectId.isValid(trimmed)) {
+    const existingById = await Category.findById(trimmed);
+    if (existingById) {
+      return existingById._id as mongoose.Types.ObjectId;
+    }
+  }
+
+  // Find category by name (case-insensitive)
+  let cat = await Category.findOne({
+    name: { $regex: new RegExp(`^${trimmed}$`, "i") },
+  });
+
+  // If category doesn't exist, create it automatically
+  if (!cat) {
+    cat = await Category.create({
+      name: trimmed,
+      description: `${trimmed} category`,
+      image: "",
+    });
+  }
+
+  return cat._id as mongoose.Types.ObjectId;
+};
 
 export const createProduct = async (
   req: Request,
@@ -15,7 +47,7 @@ export const createProduct = async (
       image,
     } = req.body;
 
-    if (!name || !description || !price || !category) {
+    if (!name || !description || price === undefined || price === null || !category) {
       res.status(400).json({
         success: false,
         message:
@@ -24,13 +56,15 @@ export const createProduct = async (
       return;
     }
 
+    const categoryId = await resolveCategoryId(category);
+
     const product = await Product.create({
-      name,
-      description,
+      name: String(name).trim(),
+      description: String(description).trim(),
       price: Number(price),
       stock: Number(stock) || 0,
-      category,
-      image,
+      category: categoryId,
+      image: image || "",
     });
 
     const populated = await Product.findById(product._id).populate(
@@ -43,12 +77,12 @@ export const createProduct = async (
       message: "Product created successfully",
       product: populated,
     });
-  } catch (error) {
-    console.error("Create Product:", error);
+  } catch (error: any) {
+    console.error("Create Product Error:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error?.message || "Server Error",
     });
   }
 };
@@ -119,12 +153,17 @@ export const updateProduct = async (
 ): Promise<void> => {
     try {
         const { id } = req.params;
+        const updateData = { ...req.body };
+
+        if (updateData.category) {
+            updateData.category = await resolveCategoryId(updateData.category);
+        }
 
         const updatedProduct = await Product.findByIdAndUpdate(
             id,
-            req.body,
+            updateData,
             { new: true, runValidators: true }
-        );
+        ).populate("category", "name image");
 
         if (!updatedProduct) {
             res.status(404).json({
@@ -141,12 +180,12 @@ export const updateProduct = async (
             product: updatedProduct,
         });
     }
-    catch (error) {
+    catch (error: any) {
         console.error("Update product error:", error);
 
         res.status(500).json({
             success: false,
-            message: "Server error",
+            message: error?.message || "Server error",
         });
     }
 };

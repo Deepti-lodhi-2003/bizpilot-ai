@@ -124,12 +124,18 @@ const Products = () => {
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
 
+    // Get category _id for the dropdown
+    const categoryId =
+      typeof product.category === "object" && product.category !== null
+        ? (product.category as { _id: string })._id
+        : (product.category as string);
+
     setEditFormData({
     name: product.name,
     description: product.description,
     price: String(product.price),
     stock: String(product.stock),
-    category: getCategoryName(product.category),
+    category: categoryId,
     image: product.image || "",
 });
 

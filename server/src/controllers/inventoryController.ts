@@ -9,7 +9,9 @@ export const getInventory = async (
   res: Response
 ): Promise<void> => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    const products = await Product.find()
+      .populate("category", "name image")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -71,10 +73,15 @@ export const addStock = async (
       performedBy: req.user!.userId,
     });
 
+    const populatedProduct = await Product.findById(product._id).populate(
+      "category",
+      "name image"
+    );
+
     res.status(200).json({
       success: true,
       message: "Stock added successfully",
-      product,
+      product: populatedProduct || product,
     });
   } catch (error) {
     console.error("Add stock error:", error);
@@ -142,10 +149,15 @@ export const removeStock = async (
       performedBy: req.user!.userId,
     });
 
+    const populatedProduct = await Product.findById(product._id).populate(
+      "category",
+      "name image"
+    );
+
     res.status(200).json({
       success: true,
       message: "Stock removed successfully",
-      product,
+      product: populatedProduct || product,
     });
   } catch (error) {
     console.error("Remove stock error:", error);

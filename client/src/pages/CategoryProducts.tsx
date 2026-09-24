@@ -6,13 +6,13 @@ import {
   type Category,
 } from "../services/categoryService";
 import { getProducts } from "../services/productService";
-import type { Product } from "../types/Product";
+import { type Product, getCategoryName } from "../types/Product";
 
 const CategoryProducts = () => {
   // URL:
   // /category/Electronics
   //
-  // categoryName = "Electronics"
+  // categoryName = "Electronics" (or categoryId)
   const { categoryName } = useParams<{
     categoryName: string;
   }>();
@@ -40,10 +40,6 @@ const CategoryProducts = () => {
             getProducts(),
           ]);
 
-        console.log("CATEGORY NAME FROM URL:", categoryName);
-        console.log("ALL CATEGORIES:", categories);
-        console.log("ALL PRODUCTS:", allProducts);
-
         if (!categoryName) {
           setError("Category not found");
           return;
@@ -51,23 +47,13 @@ const CategoryProducts = () => {
 
         // Decode URL value
         const decodedCategoryName =
-          decodeURIComponent(categoryName);
+          decodeURIComponent(categoryName).trim().toLowerCase();
 
-        console.log(
-          "DECODED CATEGORY:",
-          decodedCategoryName
-        );
-
-        // Find category by NAME
+        // Find category by NAME or ID
         const foundCategory = categories.find(
           (item) =>
-            item.name.trim().toLowerCase() ===
-            decodedCategoryName.trim().toLowerCase()
-        );
-
-        console.log(
-          "FOUND CATEGORY:",
-          foundCategory
+            item.name.trim().toLowerCase() === decodedCategoryName ||
+            item._id === decodedCategoryName
         );
 
         if (!foundCategory) {
@@ -77,59 +63,29 @@ const CategoryProducts = () => {
 
         setCategory(foundCategory);
 
-        /*
-          IMPORTANT
+        // Filter products matching this category (by name or by ID)
+        const targetCategoryName = foundCategory.name.trim().toLowerCase();
+        const targetCategoryId = foundCategory._id;
 
-          Product model:
+        const categoryProducts = allProducts.filter((product) => {
+          if (!product.category) return false;
 
-          category: string
+          const productCatName = getCategoryName(product.category)
+            .trim()
+            .toLowerCase();
 
-          Isliye product.category me category ka NAME
-          store ho raha hai.
+          const productCatId =
+            typeof product.category === "object" &&
+            product.category !== null &&
+            "_id" in product.category
+              ? String(product.category._id)
+              : String(product.category);
 
-          Example:
-
-          product.category = "Electronics"
-
-          category.name = "Electronics"
-
-          Dono ko compare karenge.
-        */
-
-        const categoryProducts = allProducts.filter(
-          (product) => {
-            if (!product.category) {
-              return false;
-            }
-
-            const productCategory =
-              String(product.category)
-                .trim()
-                .toLowerCase();
-
-            const currentCategory =
-              foundCategory.name
-                .trim()
-                .toLowerCase();
-
-            console.log(
-              "PRODUCT CATEGORY:",
-              product.name,
-              productCategory,
-              "CURRENT CATEGORY:",
-              currentCategory
-            );
-
-            return (
-              productCategory === currentCategory
-            );
-          }
-        );
-
-        console.log(
-          "CATEGORY PRODUCTS:",
-          categoryProducts
-        );
+          return (
+            productCatName === targetCategoryName ||
+            productCatId === targetCategoryId
+          );
+        });
 
         setProducts(categoryProducts);
       } catch (err) {
@@ -517,26 +473,21 @@ const CategoryProducts = () => {
                         <div className="category-product-card">
 
                           {/* Image */}
-
                           <Link
-                            to={`/products/${product._id}`}
+                            to={`/shop/${product._id}`}
                             className="text-decoration-none"
                           >
-
                             <div className="category-product-image">
-
                               <img
                                 src={getImage(product)}
                                 alt={product.name}
                               />
-
                               <div className="category-product-overlay">
                                 <span>
                                   <i className="bi bi-eye me-2" />
                                   View Product
                                 </span>
                               </div>
-
                               <span
                                 className={`category-stock-badge ${
                                   outOfStock
@@ -548,32 +499,25 @@ const CategoryProducts = () => {
                                   ? "Out of Stock"
                                   : "In Stock"}
                               </span>
-
                             </div>
-
                           </Link>
 
                           {/* Content */}
-
                           <div className="category-product-content">
-
                             <div className="d-flex justify-content-between align-items-center mb-2">
-
                               <span className="category-product-label">
                                 {category.name}
                               </span>
-
                               {!outOfStock && (
                                 <span className="category-available-small">
                                   <span />
                                   Available
                                 </span>
                               )}
-
                             </div>
 
                             <Link
-                              to={`/products/${product._id}`}
+                              to={`/shop/${product._id}`}
                               className="text-decoration-none"
                             >
                               <h4>
@@ -586,31 +530,25 @@ const CategoryProducts = () => {
                             </p>
 
                             <div className="category-product-bottom">
-
                               <div>
-
                                 <small>
                                   PRICE
                                 </small>
-
                                 <div className="category-product-price">
                                   ₹
                                   {product.price.toLocaleString(
                                     "en-IN"
                                   )}
                                 </div>
-
                               </div>
 
                               <Link
-                                to={`/products/${product._id}`}
+                                to={`/shop/${product._id}`}
                                 className="category-product-arrow"
                               >
                                 <i className="bi bi-arrow-up-right" />
                               </Link>
-
                             </div>
-
                           </div>
 
                         </div>

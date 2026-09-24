@@ -52,8 +52,15 @@ import {
 import {
   getCategories,
   createCategory,
+  updateCategory,
   deleteCategory,
 } from "../controllers/categoryController.js";
+
+import {
+  getAllCustomers,
+  getCustomerStats,
+  getCustomerById,
+} from "../controllers/customerController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/roleMiddleware.js";
@@ -253,6 +260,13 @@ router.post(
   createCategory
 );
 
+router.put(
+  "/categories/:id",
+  protect,
+  authorize("owner", "admin"),
+  updateCategory
+);
+
 router.delete(
   "/categories/:id",
   protect,
@@ -292,6 +306,31 @@ router.put(
   "/addresses/:id/default",
   protect,
   setDefaultAddress
+);
+
+// ===============================
+// CUSTOMERS (ADMIN)
+// ===============================
+
+router.get(
+  "/admin/customers/stats",
+  protect,
+  authorize("owner", "admin"),
+  getCustomerStats
+);
+
+router.get(
+  "/admin/customers",
+  protect,
+  authorize("owner", "admin"),
+  getAllCustomers
+);
+
+router.get(
+  "/admin/customers/:id",
+  protect,
+  authorize("owner", "admin"),
+  getCustomerById
 );
 
 export default router;

@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { getCategories, type Category } from "../services/categoryService";
 
 interface AddProductModalProps {
   show: boolean;
@@ -35,14 +36,25 @@ const AddProductModal = ({
   onClose,
   onSubmit,
 }: AddProductModalProps) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  // Fetch categories when modal opens
+  useEffect(() => {
+    if (!show) {
+      return;
+    }
+    getCategories()
+      .then((data) => {
+        setCategories(Array.isArray(data) ? data : []);
+      })
+      .catch(console.error);
+  }, [show]);
+
   // Prevent background screen scrolling
   useEffect(() => {
     if (!show) return;
-
     const originalOverflow = document.body.style.overflow;
-
     document.body.style.overflow = "hidden";
-
     return () => {
       document.body.style.overflow = originalOverflow;
     };
@@ -243,27 +255,31 @@ const AddProductModal = ({
 
                 {/* Category */}
                 <div className="mt-3">
-                  <label className="form-label fw-semibold">
+                  <label className="form-label fw-semibold mb-1">
                     Category
                   </label>
-
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="e.g. Electronics"
-                    style={{
-                      backgroundColor: "#f1f3f5",
-                      borderColor: "#dee2e6",
-                    }}
-                    value={formData.category}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        category: e.target.value,
-                      })
-                    }
-                    required
-                  />
+                    <select
+                      className="form-select"
+                      style={{
+                        backgroundColor: "#f1f3f5",
+                        borderColor: "#dee2e6",
+                      }}
+                      value={formData.category}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          category: e.target.value,
+                        });
+                      }}
+                      required
+                    >
+                      <option value="">-- Select Category --</option>
+                      {categories.map((cat) => (
+                        <option key={cat._id} value={cat._id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
                 </div>
 
                 {/* Product Image URL */}
