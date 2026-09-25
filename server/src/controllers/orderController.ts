@@ -185,7 +185,10 @@ export const getMyOrders = async (
     const orders = await Order.find({
       user: req.user!.userId,
     })
-      .populate("items.product")
+      .populate({
+        path: "items.product",
+        populate: { path: "category" }
+      })
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -235,7 +238,10 @@ export const getOrderById = async (
       ),
 
       user: req.user!.userId,
-    }).populate("items.product");
+    }).populate({
+      path: "items.product",
+      populate: { path: "category" }
+    } as any);
 
     if (!order) {
       res.status(404).json({
@@ -310,7 +316,10 @@ export const updateOrderStatus = async (
         id,
         { status },
         { new: true }
-      ).populate("items.product");
+      ).populate({
+        path: "items.product",
+        populate: { path: "category" }
+      } as any);
 
     if (!order) {
       res.status(404).json({
@@ -351,7 +360,10 @@ export const getAllOrders = async (
   try {
     const orders = await Order.find()
       .populate("user", "name email")
-      .populate("items.product")
+      .populate({
+        path: "items.product",
+        populate: { path: "category" }
+      })
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -433,7 +445,10 @@ export const cancelOrder = async (
     // Return populated product data
     const populatedOrder =
       await Order.findById(order._id)
-        .populate("items.product")
+        .populate({
+          path: "items.product",
+          populate: { path: "category" }
+        } as any)
         .populate("user", "name email");
 
     res.status(200).json({

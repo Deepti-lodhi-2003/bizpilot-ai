@@ -514,28 +514,28 @@ const Inventory = () => {
                       <div className="d-flex align-items-center gap-3">
 
                         <div
-  className="rounded-3 overflow-hidden d-flex align-items-center justify-content-center"
-  style={{
-    width: "50px",
-    height: "50px",
-    backgroundColor: "#f0f2f3",
-    flexShrink: 0,
-  }}
->
-  {product.image ? (
-    <img
-      src={product.image}
-      alt={product.name}
-      style={{
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-      }}
-    />
-  ) : (
-    <i className="bi bi-box-seam fs-5 text-secondary"></i>
-  )}
-</div>
+                          className="rounded-3 overflow-hidden d-flex align-items-center justify-content-center"
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            backgroundColor: "#f0f2f3",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          ) : (
+                            <i className="bi bi-box-seam fs-5 text-secondary"></i>
+                          )}
+                        </div>
 
                         <div>
                           <div className="fw-semibold">
@@ -597,7 +597,7 @@ const Inventory = () => {
                           className="btn btn-sm btn-dark"
                           onClick={() => handleManageStock(product)}
                         >
-                          <i className="bi bi-box-seam me-1"></i>
+                          {/* <i className="bi bi-box-seam me-1"></i> */}
                           Manage
                         </button>
 

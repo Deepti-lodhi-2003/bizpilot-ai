@@ -58,7 +58,8 @@ const OrderDetailsModal = ({
                             maxWidth: "600px",
                             margin: "0 auto",
                             maxHeight: "91vh",
-                            overflow: "hidden",
+                            display: "flex",
+                            flexDirection: "column",
                         }}
                     >
 
@@ -88,7 +89,7 @@ const OrderDetailsModal = ({
                         </div>
 
                         {/* Body */}
-                        <div className="modal-body px-4 py-3">
+                        <div className="modal-body px-4 py-3" style={{ overflowY: "auto" }}>
 
                             {/* Order Info */}
                             <div className="row g-2 mb-2">
@@ -174,6 +175,39 @@ const OrderDetailsModal = ({
                                     </div>
                                 </div>
 
+                            </div>
+
+                            {/* Shipping Address */}
+                            <div className="mb-3">
+                                <h6 className="fw-bold mb-2">
+                                    Shipping Address
+                                </h6>
+                                <div
+                                    className="rounded-3 p-3"
+                                    style={{
+                                        backgroundColor: "#f1f3f5",
+                                        border: "1px solid #dee2e6",
+                                    }}
+                                >
+                                    {order.shippingAddress ? (
+                                        <>
+                                            <div className="fw-semibold mb-1">
+                                                {order.shippingAddress.fullName}
+                                            </div>
+                                            <div className="text-muted small mb-1">
+                                                <i className="bi bi-telephone-fill me-2"></i>
+                                                {order.shippingAddress.phone}
+                                            </div>
+                                            <div className="text-muted small">
+                                                {order.shippingAddress.addressLine}, {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-muted small">
+                                            No shipping address provided.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Products */}
