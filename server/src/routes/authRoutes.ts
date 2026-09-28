@@ -12,6 +12,7 @@ import { getMyAddresses, addAddress, updateAddress,deleteAddress, setDefaultAddr
 import { getCategories, createCategory, updateCategory, deleteCategory,} from "../controllers/categoryController.js";
 import { getAllCustomers, getCustomerStats,getCustomerById,} from "../controllers/customerController.js";
 import { createExpense, getExpenses, getExpenseById, updateExpense, deleteExpense,} from "../controllers/expenseController.js";
+import { getAnalytics } from "../controllers/analyticsController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/roleMiddleware.js";
@@ -95,6 +96,9 @@ router.get( "/expenses/:id", protect, getExpenseById);
 router.put( "/expenses/:id", protect, updateExpense);
 router.delete( "/expenses/:id", protect, deleteExpense);
 
+
+// ANALYTICS
+router.get("/analytics", protect, getAnalytics);
 
 
 export default router;

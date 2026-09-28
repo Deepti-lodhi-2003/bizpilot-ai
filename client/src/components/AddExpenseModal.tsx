@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Expense } from "../types/Expense";
 
 interface AddExpenseModalProps {
   show: boolean;

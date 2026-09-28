@@ -9,6 +9,7 @@ interface EditExpenseModalProps {
     amount: string;
     category: string;
     date: string;
+    paymentMethod: string;
     description: string;
     status: 'Paid' | 'Pending';
   };
@@ -134,7 +135,7 @@ const EditExpenseModal = ({
                 </div>
 
                 <div className="row g-3 mb-3">
-                  <div className="col-6">
+                  <div className="col-4">
                     <label className="form-label fw-semibold">Date</label>
                     <input
                       type="date"
@@ -145,7 +146,23 @@ const EditExpenseModal = ({
                       required
                     />
                   </div>
-                  <div className="col-6">
+                  <div className="col-4">
+                    <label className="form-label fw-semibold">Payment</label>
+                    <select
+                      className="form-select"
+                      style={{ backgroundColor: "#f1f3f5", borderColor: "#dee2e6" }}
+                      value={formData.paymentMethod}
+                      onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                      required
+                    >
+                      <option value="">Select</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Card">Card</option>
+                      <option value="UPI">UPI</option>
+                      <option value="Bank Transfer">Bank Transfer</option>
+                    </select>
+                  </div>
+                  <div className="col-4">
                     <label className="form-label fw-semibold">Status</label>
                     <select
                       className="form-select"

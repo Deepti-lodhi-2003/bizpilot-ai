@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { getExpenses, createExpense, deleteExpense, type Expense } from "../services/expenseService";
+import { getExpenses, createExpense, updateExpense, deleteExpense, type Expense } from "../services/expenseService";
 import AddExpenseModal from "../components/AddExpenseModal";
+import EditExpenseModal from "../components/EditExpenseModal";
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -8,9 +9,23 @@ const Expenses = () => {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedStatus, setSelectedStatus] = useState("All");
   
   const [showModal, setShowModal] = useState(false);
   const [creating, setCreating] = useState(false);
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    amount: "",
+    category: "",
+    date: new Date().toISOString().split("T")[0],
+    paymentMethod: "",
+    description: "",
+    status: "Paid" as 'Paid' | 'Pending',
+  });
   const [formData, setFormData] = useState({
     title: "",
     amount: "",
@@ -18,7 +33,7 @@ const Expenses = () => {
     date: new Date().toISOString().split("T")[0],
     paymentMethod: "",
     description: "",
-    status: "Paid" as const,
+    status: "Paid" as 'Paid' | 'Pending',
   });
 
   const loadData = async () => {
@@ -78,15 +93,49 @@ const Expenses = () => {
     }
   };
 
+  const handleEditClick = (expense: Expense) => {
+    setEditingExpenseId(expense._id);
+    setEditFormData({
+      title: expense.title,
+      amount: String(expense.amount),
+      category: expense.category,
+      date: new Date(expense.date).toISOString().split("T")[0],
+      paymentMethod: expense.paymentMethod || "",
+      description: expense.description || "",
+      status: (expense.status as 'Paid' | 'Pending') || "Paid",
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateExpense = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingExpenseId) return;
+    try {
+      setUpdating(true);
+      await updateExpense(editingExpenseId, {
+        ...editFormData,
+        amount: Number(editFormData.amount),
+      });
+      setShowEditModal(false);
+      loadData();
+    } catch (err: any) {
+      console.error("Failed to update expense:", err);
+      alert(err?.response?.data?.message || "Failed to update expense");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const filteredExpenses = useMemo(() => {
     const searchText = search.toLowerCase().trim();
     const result = expenses.filter((expense) => {
       const matchesSearch = expense.title.toLowerCase().includes(searchText);
       const matchesCategory = selectedCategory === "All" || expense.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesStatus = selectedStatus === "All" || expense.status === selectedStatus;
+      return matchesSearch && matchesCategory && matchesStatus;
     });
     return result;
-  }, [expenses, search, selectedCategory]);
+  }, [expenses, search, selectedCategory, selectedStatus]);
 
   const stats = useMemo(() => {
     const total = expenses.reduce((acc, curr) => acc + curr.amount, 0);
@@ -119,7 +168,6 @@ const Expenses = () => {
 
   return (
     <div>
-      {/* HEADER */}
       <div className="d-flex justify-content-between align-items-end mb-4">
         <div>
           <div className="text-uppercase fw-semibold small text-secondary mb-1" style={{ letterSpacing: "1.5px" }}>
@@ -239,6 +287,18 @@ const Expenses = () => {
                 <option value="Other">Other</option>
               </select>
             </div>
+
+            <div className="col-12 col-sm-6 col-md-3">
+              <select
+                className="form-select"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <option value="All">All Status</option>
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -305,13 +365,22 @@ const Expenses = () => {
                       ₹{expense.amount.toLocaleString("en-IN")}
                     </td>
                     <td>
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        title="Delete Expense"
-                        onClick={() => handleDeleteExpense(expense._id)}
-                      >
-                        <i className="bi bi-trash" />
-                      </button>
+                      <div className="d-flex gap-2">
+                        <button
+                          className="btn btn-sm btn-outline-dark"
+                          title="Edit Expense"
+                          onClick={() => handleEditClick(expense)}
+                        >
+                          <i className="bi bi-pencil" />
+                        </button>
+                        <button
+                          className="btn btn-sm btn-outline-danger"
+                          title="Delete Expense"
+                          onClick={() => handleDeleteExpense(expense._id)}
+                        >
+                          <i className="bi bi-trash" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -329,6 +398,15 @@ const Expenses = () => {
         setFormData={setFormData}
         onClose={() => setShowModal(false)}
         onSubmit={handleAddExpense}
+      />
+
+      <EditExpenseModal
+        show={showEditModal}
+        updating={updating}
+        formData={editFormData}
+        setFormData={setEditFormData}
+        onClose={() => setShowEditModal(false)}
+        onSubmit={handleUpdateExpense}
       />
     </div>
   );
