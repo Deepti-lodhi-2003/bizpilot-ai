@@ -139,6 +139,12 @@ body {
   z-index: 1030;
 }
 
+/* Remove active background from dropdown items */
+.dropdown-item:active {
+  background-color: #212529 !important;
+  color: #ffffff !important;
+}
+
 /* Mobile menu button */
 
 .mobile-menu-btn {

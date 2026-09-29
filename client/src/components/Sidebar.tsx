@@ -57,6 +57,7 @@ const menuItems: MenuItem[] = [
     path: "/ai-assistant",
     icon: "bi-robot",
   },
+
 ];
 
 const Sidebar = ({isOpen, onClose} : SidebarProps) => {

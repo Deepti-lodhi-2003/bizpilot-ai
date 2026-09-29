@@ -181,11 +181,17 @@ const CustomerLayout = () => {
                 )}
               </NavLink>
 
-              {/* Login */}
-              <NavLink to="/login" className="navbar-login">
-                <i className="bi bi-person me-2"></i>
-                Login
-              </NavLink>
+              {localStorage.getItem("token") ? (
+                <NavLink to="/customer-profile" className="navbar-login ms-2 bg-primary text-white border-primary">
+                  <i className="bi bi-person me-2"></i>
+                  Profile
+                </NavLink>
+              ) : (
+                <NavLink to="/login" className="navbar-login">
+                  <i className="bi bi-box-arrow-in-right me-2"></i>
+                  Login
+                </NavLink>
+              )}
             </div>
           </div>
         </div>

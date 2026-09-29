@@ -5,6 +5,9 @@ interface IUser {
     email: string;
     password: string;
     role: "admin" | "customer";
+    phone?: string;
+    address?: string;
+    avatar?: string;
 }
 
 const userSchema = new Schema<IUser>(
@@ -28,12 +31,15 @@ const userSchema = new Schema<IUser>(
             required: true,
         },
 
-        role: {
-            type: String,
-            enum: ["admin", "customer"],
-            default: "customer",
-        },
+    phone: { type: String, default: "" },
+    address: { type: String, default: "" },
+    avatar: { type: String, default: "" },
+    role: {
+      type: String,
+      enum: ["admin", "customer"],
+      default: "customer",
     },
+  },
     {
         timestamps: true,
     }

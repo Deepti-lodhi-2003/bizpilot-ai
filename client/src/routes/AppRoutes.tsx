@@ -20,6 +20,9 @@ import Cart from "../pages/Cart";
 import CategoryProducts from "../pages/CategoryProducts";
 import Checkout from "../pages/Checkout";
 import MyOrders from "../pages/MyOrders";
+import Profile from "../pages/Profile";
+import AdminProfile from "../pages/AdminProfile";
+import CustomerProfile from "../pages/CustomerProfile";
 
 
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -40,6 +43,8 @@ function AppRoutes() {
           />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/myorders" element={<MyOrders />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/customer-profile" element={<CustomerProfile />} />
         </Route>
 
         <Route path="/login" element={<Login />} />
@@ -57,6 +62,8 @@ function AppRoutes() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/ai-assistant" element={<AIAssistant />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/admin-profile" element={<AdminProfile />} />
 
         </Route>
 

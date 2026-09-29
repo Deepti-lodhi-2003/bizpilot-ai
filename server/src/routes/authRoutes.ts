@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import { registerUser } from "../controllers/registerController.js";
 import { loginUser } from "../controllers/loginController.js";
-import { getProfile } from "../controllers/profileController.js";
+import { getProfile, updateProfile } from "../controllers/profileController.js";
 import { createProduct, getProducts, getProductById, updateProduct, deleteProduct,} from "../controllers/productController.js";
 import {  createOrder,  getMyOrders,  getOrderById, updateOrderStatus, cancelOrder, getAllOrders,} from "../controllers/orderController.js";
 import { addToCart, getCart, updateCartQuantity, removeFromCart, clearCart,} from "../controllers/cartController.js";
@@ -25,6 +25,7 @@ const router = Router();
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/profile", protect, getProfile);
+router.put("/profile", protect, updateProfile);
 
 
 // PRODUCT
