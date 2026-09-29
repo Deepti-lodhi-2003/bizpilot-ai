@@ -21,6 +21,13 @@ const getAuthHeaders = () => {
   };
 };
 
+export const getExpenseCategories = async (): Promise<string[]> => {
+  const response = await axios.get(`${API_URL}/expenses/categories`, {
+    headers: getAuthHeaders(),
+  });
+  return response.data.categories;
+};
+
 export const getExpenses = async (): Promise<Expense[]> => {
   const response = await axios.get(`${API_URL}/expenses`, {
     headers: getAuthHeaders(),

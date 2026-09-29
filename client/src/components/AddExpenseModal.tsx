@@ -15,6 +15,7 @@ interface AddExpenseModalProps {
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   onClose: () => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  categories: string[];
 }
 
 const AddExpenseModal = ({
@@ -24,6 +25,7 @@ const AddExpenseModal = ({
   setFormData,
   onClose,
   onSubmit,
+  categories,
 }: AddExpenseModalProps) => {
   // Prevent background screen scrolling
   useEffect(() => {
@@ -125,11 +127,9 @@ const AddExpenseModal = ({
                     required
                   >
                     <option value="">-- Select Category --</option>
-                    <option value="Utilities">Utilities</option>
-                    <option value="Salary">Salary</option>
-                    <option value="Maintenance">Maintenance</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Other">Other</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
                   </select>
                 </div>
 

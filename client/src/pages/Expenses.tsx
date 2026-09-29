@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { getExpenses, createExpense, updateExpense, deleteExpense, type Expense } from "../services/expenseService";
+import { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseCategories, type Expense } from "../services/expenseService";
 import AddExpenseModal from "../components/AddExpenseModal";
 import EditExpenseModal from "../components/EditExpenseModal";
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -40,8 +41,9 @@ const Expenses = () => {
     try {
       setLoading(true);
       setError("");
-      const data = await getExpenses();
+      const [data, cats] = await Promise.all([getExpenses(), getExpenseCategories()]);
       setExpenses(data || []);
+      setCategories(cats || []);
     } catch (err: any) {
       console.error("Failed to fetch expenses:", err);
       setError(err?.response?.data?.message || "Failed to load expenses");
@@ -280,11 +282,9 @@ const Expenses = () => {
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
                 <option value="All">All Categories</option>
-                <option value="Utilities">Utilities</option>
-                <option value="Salary">Salary</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Other">Other</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
               </select>
             </div>
 
@@ -398,6 +398,7 @@ const Expenses = () => {
         setFormData={setFormData}
         onClose={() => setShowModal(false)}
         onSubmit={handleAddExpense}
+        categories={categories}
       />
 
       <EditExpenseModal
@@ -407,6 +408,7 @@ const Expenses = () => {
         setFormData={setEditFormData}
         onClose={() => setShowEditModal(false)}
         onSubmit={handleUpdateExpense}
+        categories={categories}
       />
     </div>
   );

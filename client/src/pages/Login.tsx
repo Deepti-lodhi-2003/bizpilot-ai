@@ -25,6 +25,9 @@ const Login = () => {
       });
 
       localStorage.setItem("token", response.token);
+      if (response.user && response.user.role) {
+        localStorage.setItem("role", response.user.role);
+      }
 
       navigate("/dashboard");
     } catch (error) {

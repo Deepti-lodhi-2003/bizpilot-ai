@@ -11,8 +11,9 @@ import { getInventory, addStock, removeStock, getInventoryHistory,} from "../con
 import { getMyAddresses, addAddress, updateAddress,deleteAddress, setDefaultAddress,} from "../controllers/addressController.js";
 import { getCategories, createCategory, updateCategory, deleteCategory,} from "../controllers/categoryController.js";
 import { getAllCustomers, getCustomerStats,getCustomerById,} from "../controllers/customerController.js";
-import { createExpense, getExpenses, getExpenseById, updateExpense, deleteExpense,} from "../controllers/expenseController.js";
+import { createExpense, getExpenses, getExpenseById, updateExpense, deleteExpense, getExpenseCategories } from "../controllers/expenseController.js";
 import { getAnalytics } from "../controllers/analyticsController.js";
+import { chatWithAI } from "../controllers/aiController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/roleMiddleware.js";
@@ -23,15 +24,15 @@ const router = Router();
 // AUTH
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.get("/profile",protect,authorize("owner", "admin"),getProfile);
+router.get("/profile", protect, getProfile);
 
 
 // PRODUCT
-router.post( "/products", protect, authorize("owner", "admin"), createProduct);
+router.post( "/products", protect, authorize("admin"), createProduct);
 router.get("/products", getProducts);
 router.get("/products/:id",getProductById);
-router.put("/products/:id",protect, authorize("owner", "admin"), updateProduct);
-router.delete( "/products/:id", protect, authorize("owner", "admin"), deleteProduct);
+router.put("/products/:id",protect, authorize("admin"), updateProduct);
+router.delete( "/products/:id", protect, authorize("admin"), deleteProduct);
 
 
 // ORDER
@@ -42,8 +43,8 @@ router.put( "/orders/:id/cancel", protect, cancelOrder);
 
 
 // ADMIN ORDERS
-router.get( "/admin/orders", protect, authorize("owner", "admin"), getAllOrders);
-router.put( "/orders/:id/status", protect, authorize("owner", "admin"), updateOrderStatus);
+router.get( "/admin/orders", protect, authorize("admin"), getAllOrders);
+router.put( "/orders/:id/status", protect, authorize("admin"), updateOrderStatus);
 
 
 // CART
@@ -62,17 +63,17 @@ router.post( "/payment/verify", protect,verifyPayment);
 
 
 // INVENTORY
-router.get( "/inventory", protect, authorize("owner", "admin"),getInventory);
-router.put( "/inventory/:productId/add", protect, authorize("owner", "admin"), addStock);
-router.put( "/inventory/:productId/remove", protect, authorize("owner", "admin"), removeStock);
-router.get( "/inventory/:productId/history", protect, authorize("owner", "admin"), getInventoryHistory);
+router.get( "/inventory", protect, authorize("admin"),getInventory);
+router.put( "/inventory/:productId/add", protect, authorize("admin"), addStock);
+router.put( "/inventory/:productId/remove", protect, authorize("admin"), removeStock);
+router.get( "/inventory/:productId/history", protect, authorize("admin"), getInventoryHistory);
 
 
 // CATEGORIES
 router.get( "/categories", getCategories);
-router.post( "/categories", protect, authorize("owner", "admin"),createCategory);
-router.put( "/categories/:id", protect, authorize("owner", "admin"),updateCategory);
-router.delete( "/categories/:id", protect, authorize("owner", "admin"), deleteCategory);
+router.post( "/categories", protect, authorize("admin"),createCategory);
+router.put( "/categories/:id", protect, authorize("admin"),updateCategory);
+router.delete( "/categories/:id", protect, authorize("admin"), deleteCategory);
 
 
 // ADDRESS
@@ -84,21 +85,25 @@ router.put( "/addresses/:id/default", protect, setDefaultAddress);
 
 
 // CUSTOMERS (ADMIN)
-router.get( "/admin/customers/stats", protect, authorize("owner", "admin"), getCustomerStats);
-router.get( "/admin/customers", protect, authorize("owner", "admin"), getAllCustomers);
-router.get( "/admin/customers/:id", protect, authorize("owner", "admin"),getCustomerById);
+router.get( "/admin/customers/stats", protect, authorize("admin"), getCustomerStats);
+router.get( "/admin/customers", protect, authorize("admin"), getAllCustomers);
+router.get( "/admin/customers/:id", protect, authorize("admin"),getCustomerById);
 
 
 // Expenses 
-router.post("/expenses", protect, createExpense);
-router.get( "/expenses", protect, getExpenses);
-router.get( "/expenses/:id", protect, getExpenseById);
-router.put( "/expenses/:id", protect, updateExpense);
-router.delete( "/expenses/:id", protect, deleteExpense);
+router.post("/expenses", protect, authorize("admin"), createExpense);
+router.get( "/expenses", protect, authorize("admin"), getExpenses);
+router.get( "/expenses/categories", protect, authorize("admin"), getExpenseCategories);
+router.get( "/expenses/:id", protect, authorize("admin"), getExpenseById);
+router.put( "/expenses/:id", protect, authorize("admin"), updateExpense);
+router.delete( "/expenses/:id", protect, authorize("admin"), deleteExpense);
 
 
 // ANALYTICS
-router.get("/analytics", protect, getAnalytics);
+router.get("/analytics", protect, authorize("admin"), getAnalytics);
+
+// AI Assistance
+router.post( "/ai/chat", protect, authorize("admin"), chatWithAI );
 
 
 export default router;

@@ -4,7 +4,7 @@ interface IUser {
     name: string;
     email: string;
     password: string;
-    role: "owner" | "admin" | "staff";
+    role: "admin" | "customer";
 }
 
 const userSchema = new Schema<IUser>(
@@ -30,8 +30,8 @@ const userSchema = new Schema<IUser>(
 
         role: {
             type: String,
-            enum: ["owner", "admin", "staff"],
-            default: "staff",
+            enum: ["admin", "customer"],
+            default: "customer",
         },
     },
     {

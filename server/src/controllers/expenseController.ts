@@ -338,3 +338,28 @@ export const deleteExpense = async (
     });
   }
 };
+
+// ======================================
+// GET EXPENSE CATEGORIES
+// ======================================
+
+export const getExpenseCategories = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const categoryPath = Expense.schema.path("category") as any;
+    const categories = categoryPath.enumValues;
+    
+    res.status(200).json({
+      success: true,
+      categories,
+    });
+  } catch (error) {
+    console.error("Get expense categories error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};

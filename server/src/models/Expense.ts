@@ -18,6 +18,7 @@ export interface IExpense extends Document {
     | "Travel"
     | "Office Supplies"
     | "Software"
+    | "Maintenance"
     | "Other";
 
   amount: number;
@@ -64,6 +65,7 @@ const expenseSchema = new Schema<IExpense>(
         "Travel",
         "Office Supplies",
         "Software",
+        "Maintenance",
         "Other",
       ],
       required: true,

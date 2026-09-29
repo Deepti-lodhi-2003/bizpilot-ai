@@ -14,8 +14,8 @@ export const getAllCustomers = async (
   try {
     const { search, status } = req.query;
 
-    // Fetch non-owner users
-    const users = await User.find({ role: { $ne: "owner" } })
+    // Fetch only customer users
+    const users = await User.find({ role: "customer" })
       .select("-password")
       .sort({ createdAt: -1 });
 
@@ -107,7 +107,7 @@ export const getCustomerStats = async (
   res: Response
 ): Promise<void> => {
   try {
-    const users = await User.find({ role: { $ne: "owner" } });
+    const users = await User.find({ role: "customer" });
     const orders = await Order.find();
 
     const totalCustomers = users.length;
