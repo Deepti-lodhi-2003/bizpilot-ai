@@ -10,10 +10,29 @@ interface Message {
 }
 
 const AIAssistant: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<Message[]>(() => {
+  try {
+    const savedMessages = localStorage.getItem("bizpilot-ai-messages");
+
+    if (!savedMessages) {
+      return [];
+    }
+
+    const parsedMessages = JSON.parse(savedMessages);
+
+    if (!Array.isArray(parsedMessages)) {
+      return [];
+    }
+
+    return parsedMessages;
+  } catch (error) {
+    console.error("Failed to load AI chat:", error);
+    return [];
+  }
+});
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -22,6 +41,17 @@ const AIAssistant: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  useEffect(() => {
+  try {
+    localStorage.setItem(
+      "bizpilot-ai-messages",
+      JSON.stringify(messages)
+    );
+  } catch (error) {
+    console.error("Failed to save AI chat:", error);
+  }
+}, [messages]);
 
   const handleSend = async (text: string = inputValue) => {
     if (!text.trim()) return;
@@ -133,7 +163,11 @@ const AIAssistant: React.FC = () => {
             </div>
           </div>
           <div>
-            <button className="btn btn-light btn-sm text-muted rounded-pill px-3 shadow-sm border-0" onClick={() => setMessages([])}>
+            <button className="btn btn-light btn-sm text-muted rounded-pill px-3 shadow-sm border-0" 
+            onClick={() => { setMessages([]);
+            localStorage.removeItem("bizpilot-ai-messages");
+            }}
+            >
               <i className="bi bi-arrow-clockwise me-1"></i> Reset Chat
             </button>
           </div>
@@ -164,7 +198,7 @@ const AIAssistant: React.FC = () => {
                 </div>
                 <h1 className="fw-bold mb-3" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   Hello! How can I help you today?
-                </h1>
+                </h1> 
                 <p className="text-muted fs-5">I'm your intelligent business copilot. I can analyze your sales, manage inventory, and help you make data-driven decisions.</p>
               </div>
 

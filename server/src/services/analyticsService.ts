@@ -10,7 +10,19 @@ export const getAnalyticsData = async () => {
   // ORDERS
   // ==================================
 
-  const orders = await Order.find();
+  const orders = await Order.find()
+    .populate('user', 'name')
+    .populate('items.product', 'name')
+    .sort({ createdAt: -1 });
+
+  const recentOrders = orders.slice(0, 5).map(order => ({
+    id: `#ORD-${order._id.toString().slice(-4).toUpperCase()}`,
+    customer: (order.user as any)?.name || 'Unknown Customer',
+    product: (order.items[0]?.product as any)?.name || 'Unknown Product',
+    amount: `₹${order.totalAmount.toLocaleString()}`,
+    status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+    date: new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+  }));
 
   // Total orders
   const totalOrders = orders.length;
@@ -149,6 +161,48 @@ export const getAnalyticsData = async () => {
   }
 
   // ==================================
+  // AI INSIGHTS
+  // ==================================
+  let revenueInsight = { type: "info", title: "No revenue change", description: "Not enough data.", icon: "bi-graph-up" };
+  if (monthlyData.length >= 2) {
+    const lastMonthRev = monthlyData[4].revenue;
+    const thisMonthRev = monthlyData[5].revenue;
+    if (lastMonthRev > 0) {
+      const growth = ((thisMonthRev - lastMonthRev) / lastMonthRev * 100).toFixed(1);
+      revenueInsight = {
+        type: thisMonthRev > lastMonthRev ? "positive" : "warning",
+        title: thisMonthRev > lastMonthRev ? "Revenue is growing" : "Revenue is down",
+        description: `Your revenue ${thisMonthRev > lastMonthRev ? "increased" : "decreased"} by ${Math.abs(Number(growth))}% compared to last month.`,
+        icon: thisMonthRev > lastMonthRev ? "bi-graph-up-arrow" : "bi-graph-down-arrow",
+      };
+    }
+  }
+
+  let expenseInsight = { type: "info", title: "No expense change", description: "Not enough data.", icon: "bi-wallet2" };
+  if (monthlyData.length >= 2) {
+    const lastMonthExp = monthlyData[4].expenses;
+    const thisMonthExp = monthlyData[5].expenses;
+    if (lastMonthExp > 0) {
+      const growth = ((thisMonthExp - lastMonthExp) / lastMonthExp * 100).toFixed(1);
+      expenseInsight = {
+        type: thisMonthExp > lastMonthExp ? "warning" : "positive",
+        title: thisMonthExp > lastMonthExp ? "Expenses increased" : "Expenses decreased",
+        description: `Your expenses are ${Math.abs(Number(growth))}% ${thisMonthExp > lastMonthExp ? "higher" : "lower"} than last month.`,
+        icon: "bi-exclamation-triangle",
+      };
+    }
+  }
+
+  const orderInsight = {
+    type: "info",
+    title: "Orders are performing well",
+    description: `You received ${totalOrders} orders in total.`,
+    icon: "bi-lightbulb",
+  };
+
+  const insights = [revenueInsight, expenseInsight, orderInsight];
+
+  // ==================================
   // RESPONSE
   // ==================================
 
@@ -157,11 +211,10 @@ export const getAnalyticsData = async () => {
     totalExpenses,
     netProfit,
     totalOrders,
-
     monthlyData,
-
     expenseByCategory,
-
     orderStatus,
+    recentOrders,
+    insights
   };
 };

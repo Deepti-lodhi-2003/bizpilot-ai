@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 interface Order {
   id: string;
   customer: string;
@@ -7,58 +9,29 @@ interface Order {
   date: string;
 }
 
-const orders: Order[] = [
-  {
-    id: "#ORD-1024",
-    customer: "Rahul Sharma",
-    product: "Premium Plan",
-    amount: "₹2,499",
-    status: "Completed",
-    date: "Aug 02, 2026",
-  },
-  {
-    id: "#ORD-1023",
-    customer: "Priya Singh",
-    product: "Business Plan",
-    amount: "₹4,999",
-    status: "Pending",
-    date: "Aug 02, 2026",
-  },
-  {
-    id: "#ORD-1022",
-    customer: "Aman Verma",
-    product: "Starter Plan",
-    amount: "₹999",
-    status: "Completed",
-    date: "Aug 01, 2026",
-  },
-  {
-    id: "#ORD-1021",
-    customer: "Neha Patel",
-    product: "Premium Plan",
-    amount: "₹2,499",
-    status: "Cancelled",
-    date: "Aug 01, 2026",
-  },
-];
+interface RecentOrdersProps {
+  orders: Order[];
+}
 
 const getStatusClass = (status: Order["status"]) => {
-  switch (status) {
-    case "Completed":
+  switch (status.toLowerCase()) {
+    case "completed":
+    case "delivered":
       return "bg-success-subtle text-success";
 
-    case "Pending":
+    case "pending":
+    case "processing":
       return "bg-warning-subtle text-warning-emphasis";
 
-    case "Cancelled":
+    case "cancelled":
       return "bg-danger-subtle text-danger";
 
     default:
-      return "";
+      return "bg-primary-subtle text-primary";
   }
 };
 
-const RecentOrders = () => {
+const RecentOrders = ({ orders }: RecentOrdersProps) => {
   return (
     <div className="card border-0 shadow-sm">
       <div className="card-body">
@@ -75,9 +48,9 @@ const RecentOrders = () => {
             </p>
           </div>
 
-          <button className="btn btn-sm btn-outline-dark">
+          <Link to="/orders" className="btn btn-sm btn-outline-dark">
             View All
-          </button>
+          </Link>
         </div>
 
         {/* Responsive Table */}

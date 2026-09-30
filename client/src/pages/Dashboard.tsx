@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import StatCard from "../components/StatCard";
 import RevenueChart from "../components/RevenueChart";
 import RecentOrders from "../components/RecentOrders";
 import AIInsightCard from "../components/AIInsightCard";
+import { getAnalytics } from "../services/authService";
 
 interface StatCardData {
   title: string;
@@ -10,34 +12,84 @@ interface StatCardData {
   trend: string;
 }
 
-const stats: StatCardData[] = [
-  {
-    title: "Revenue",
-    value: "₹85,400",
-    icon: "bi-currency-rupee",
-    trend: "+12.5% this month",
-  },
-  {
-    title: "Expenses",
-    value: "₹32,100",
-    icon: "bi-wallet2",
-    trend: "+5.2% this month",
-  },
-  {
-    title: "Profit",
-    value: "₹53,300",
-    icon: "bi-graph-up-arrow",
-    trend: "+18.4% this month",
-  },
-  {
-    title: "Orders",
-    value: "248",
-    icon: "bi-cart3",
-    trend: "+8.7% this month",
-  },
-];
-
 const Dashboard = () => {
+  const [stats, setStats] = useState<StatCardData[]>([
+    {
+      title: "Revenue",
+      value: "₹0",
+      icon: "bi-currency-rupee",
+      trend: "Loading...",
+    },
+    {
+      title: "Expenses",
+      value: "₹0",
+      icon: "bi-wallet2",
+      trend: "Loading...",
+    },
+    {
+      title: "Profit",
+      value: "₹0",
+      icon: "bi-graph-up-arrow",
+      trend: "Loading...",
+    },
+    {
+      title: "Orders",
+      value: "0",
+      icon: "bi-cart3",
+      trend: "Loading...",
+    },
+  ]);
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
+  const [insights, setInsights] = useState<any[]>([]);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const data = await getAnalytics();
+        const { totalRevenue, totalExpenses, netProfit, totalOrders, monthlyData: mData, insights: aiInsights, recentOrders: rOrders } = data.analytics;
+
+        setMonthlyData(mData || []);
+        setInsights(aiInsights || []);
+        setRecentOrders(rOrders || []);
+
+        setStats([
+          {
+            title: "Revenue",
+            value: `₹${totalRevenue.toLocaleString()}`,
+            icon: "bi-currency-rupee",
+            trend: "All time",
+          },
+          {
+            title: "Expenses",
+            value: `₹${totalExpenses.toLocaleString()}`,
+            icon: "bi-wallet2",
+            trend: "All time",
+          },
+          {
+            title: "Profit",
+            value: `₹${netProfit.toLocaleString()}`,
+            icon: "bi-graph-up-arrow",
+            trend: "All time",
+          },
+          {
+            title: "Orders",
+            value: `${totalOrders}`,
+            icon: "bi-cart3",
+            trend: "Total orders",
+          },
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch analytics:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, []);
+
   return (
     <div>
       {/* Dashboard Header */}
@@ -71,11 +123,11 @@ const Dashboard = () => {
       {/* Charts */}
       <div className="row g-3">
         <div className="col-12 col-xl-8">
-          <RevenueChart />
+          <RevenueChart data={monthlyData} />
         </div>
 
         <div className="col-12 col-xl-4">
-          <AIInsightCard />
+          <AIInsightCard insights={insights} />
         </div>
       </div>
 
@@ -83,7 +135,7 @@ const Dashboard = () => {
       {/* Recent Orders */}
       <div className="row mt-4">
         <div className="col-12">
-          <RecentOrders />
+          <RecentOrders orders={recentOrders} />
         </div>
       </div>
 

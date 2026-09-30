@@ -15,16 +15,11 @@ interface RevenueData {
   expenses: number;
 }
 
-const data: RevenueData[] = [
-  { month: "Jan", revenue: 45000, expenses: 22000 },
-  { month: "Feb", revenue: 52000, expenses: 25000 },
-  { month: "Mar", revenue: 48000, expenses: 21000 },
-  { month: "Apr", revenue: 61000, expenses: 28000 },
-  { month: "May", revenue: 72000, expenses: 31000 },
-  { month: "Jun", revenue: 85400, expenses: 32100 },
-];
+interface RevenueChartProps {
+  data: RevenueData[];
+}
 
-const RevenueChart = () => {
+const RevenueChart = ({ data }: RevenueChartProps) => {
   return (
     <div className="card border-0 shadow-sm h-100">
       <div className="card-body">

@@ -5,47 +5,24 @@ interface AIInsight {
   icon: string;
 }
 
-const insights: AIInsight[] = [
-  {
-    type: "positive",
-    title: "Revenue is growing",
-    description:
-      "Your revenue increased by 12.5% compared to last month.",
-    icon: "bi-graph-up-arrow",
-  },
-  {
-    type: "warning",
-    title: "Expenses increased",
-    description:
-      "Your expenses are 5.2% higher than last month.",
-    icon: "bi-exclamation-triangle",
-  },
-  {
-    type: "info",
-    title: "Orders are performing well",
-    description:
-      "You received 248 orders this month.",
-    icon: "bi-lightbulb",
-  },
-];
+interface AIInsightCardProps {
+  insights: AIInsight[];
+}
 
 const getInsightClass = (type: AIInsight["type"]) => {
   switch (type) {
     case "positive":
       return "bg-success-subtle text-success";
-
     case "warning":
       return "bg-warning-subtle text-warning-emphasis";
-
     case "info":
       return "bg-primary-subtle text-primary";
-
     default:
       return "";
   }
 };
 
-const AIInsightCard = () => {
+const AIInsightCard = ({ insights }: AIInsightCardProps) => {
   return (
     <div className="card border-0 shadow-sm h-100">
       <div className="card-body">

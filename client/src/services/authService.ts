@@ -95,4 +95,26 @@ export const updateProfile = async (data: any) => {
     }
     throw new Error("Something went wrong");
   }
+};
+
+export const getAnalytics = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("No token found");
+
+    const response = await axios.get(`${API_URL}/analytics`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch analytics"
+      );
+    }
+    throw new Error("Something went wrong");
+  }
 };
