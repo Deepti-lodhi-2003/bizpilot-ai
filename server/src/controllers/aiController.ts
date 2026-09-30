@@ -3,6 +3,11 @@ import type { AuthenticatedRequest } from "../middleware/authMiddleware.js";
 import Product from "../models/Product.js";
 import { askAI } from "../services/aiService.js";
 import Order from "../models/Order.js";
+import { getRequestedProduct, getProductSales, } from "../services/productAIService.js";
+import {
+    getDateRangeFromMessage,
+    getSalesByDateRange,
+} from "../services/salesService.js";
 
 // ======================================
 // CHAT WITH AI
@@ -49,6 +54,25 @@ export const chatWithAI = async (
         }
 
         // ==================================
+// GET REQUESTED PRODUCT
+// ==================================
+
+const requestedProduct = await getRequestedProduct(
+    message.trim()
+);
+
+let requestedProductSales = {
+    totalQuantity: 0,
+    totalRevenue: 0,
+};
+
+if (requestedProduct) {
+    requestedProductSales = await getProductSales(
+        requestedProduct._id.toString()
+    );
+}
+
+        // ==================================
         // GET LOW STOCK PRODUCTS
         // ==================================
 
@@ -56,6 +80,9 @@ export const chatWithAI = async (
             stock: { $gt: 0, $lte: 5 },
         }).select("name stock price");
 
+        // ==================================
+        // GET TOP SELLING PRODUCTS
+        // ==================================
 
         const topSellingProducts = await Order.aggregate([
             {
@@ -71,9 +98,11 @@ export const chatWithAI = async (
             {
                 $group: {
                     _id: "$items.product",
+
                     totalQuantity: {
                         $sum: "$items.quantity",
                     },
+
                     totalRevenue: {
                         $sum: {
                             $multiply: [
@@ -118,6 +147,9 @@ export const chatWithAI = async (
             },
         ]);
 
+        // ==================================
+        // GET TOP CUSTOMERS
+        // ==================================
 
         const topCustomers = await Order.aggregate([
             {
@@ -129,9 +161,11 @@ export const chatWithAI = async (
             {
                 $group: {
                     _id: "$user",
+
                     totalOrders: {
                         $sum: 1,
                     },
+
                     totalSpent: {
                         $sum: "$totalAmount",
                     },
@@ -173,17 +207,46 @@ export const chatWithAI = async (
         ]);
 
         // ==================================
+        // GET REQUESTED SALES PERIOD
+        // ==================================
+
+        const dateRange = getDateRangeFromMessage(
+            message.trim()
+        );
+
+        let requestedSales = {
+            totalOrders: 0,
+            totalRevenue: 0,
+        };
+
+        let requestedPeriod = "No specific period";
+
+        if (dateRange) {
+            requestedSales = await getSalesByDateRange(
+                dateRange.startDate,
+                dateRange.endDate
+            );
+
+            requestedPeriod = dateRange.label;
+        }
+
+        // ==================================
         // ASK AI
         // ==================================
 
         const reply = await askAI(
-    message.trim(),
-    {
-        lowStockProducts,
-        topSellingProducts,
-        topCustomers,
-    }
-);
+            message.trim(),
+{
+    lowStockProducts,
+    topSellingProducts,
+    topCustomers,
+    requestedPeriod,
+    requestedSales,
+    requestedProduct,
+    requestedProductSales,
+}
+        );
+
         // ==================================
         // RESPONSE
         // ==================================
